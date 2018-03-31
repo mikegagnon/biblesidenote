@@ -4,3 +4,8 @@ body {
     font-family: "Times New Roman", serif;
 }
 
+.ql-container.ql-snow {
+    border: 0px;
+    font-family: "Times New Roman", serif;
+    font-size: 15px;
+}
