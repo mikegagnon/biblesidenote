@@ -4,8 +4,46 @@ body {
     font-family: "Times New Roman", serif;
 }
 
+#title h1 {
+    margin: 0px;
+}
+
 .ql-container.ql-snow {
     border: 0px;
     font-family: "Times New Roman", serif;
     font-size: 15px;
+}
+
+.note .ql-toolbar {
+    position: fixed;
+    border-left: 0px;
+    border-right: 0px;
+    border-bottom: 1px solid #ccc;
+    border-top: 0px;
+    width: 100%;
+}
+
+#breadcrumbs {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 20px;
+    padding-right: 0px;
+    margin: 0px;
+    background-color: #eceeef;
+    font-family: "Times New Roman", serif;
+    font-size: 16px;
+    border-bottom: 1px solid #ccc;
+    border-top: 1px solid #ccc;
+    position: fixed;
+    width: 100%;
+}
+
+#note-container {
+     position: fixed;
+     height: 100%;
+     width: 100%;
+}
+
+.note {
+    position: absolute;
 }

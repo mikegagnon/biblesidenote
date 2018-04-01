@@ -17,14 +17,24 @@ var Sidenote = {
     },
 
     init: function() {
+        $("#breadcrumbs").text("foo");
         Sidenote.state.noteWidth = Sidenote.noteWidth();
         Sidenote.initContents();
         Sidenote.initTitle();
         Sidenote.initRootNote();
+        Sidenote.positionContainer();
     },
 
     noteWidth: function() {
         return ($("#note-container").width() - Sidenote.constant.marginLeft) / Sidenote.state.numVisibleColumns;
+    },
+
+    positionContainer: function() {
+        var top = $("#title").outerHeight(true) +
+            $("#breadcrumbs").outerHeight(true);
+
+        $("#note-container").css("top", top);
+        $("#note-container").css("left", 0);
     },
 
     initContents: function() {
@@ -57,8 +67,13 @@ var Sidenote = {
         html += "</div>";
 
         $("#note-container").append(html);
-        $("#" + divId).css("width", Sidenote.state.noteWidth);
+
         Sidenote.newEditor(divId);
+
+        const div = "#" + divId;
+        const toolbarHeight = $(".ql-toolbar").outerHeight(true);
+        $(div).css("top", toolbarHeight);
+        $(div).css("width", Sidenote.state.noteWidth);
     },
 
     newEditor: function(divId) {
@@ -76,6 +91,16 @@ var Sidenote = {
         });
 
         Sidenote.state.editors[divId] = editor;
+
+        Sidenote.positionToolbar(divId);
+    },
+
+    positionToolbar: function(divId) {
+        const top = $("#title").outerHeight(true) +
+                  $("#breadcrumbs").outerHeight(true);
+        const toolbar = "#" + divId + " .ql-toolbar";
+        $(toolbar).css("top", top);
+        $(toolbar).css("left", 0);
     },
 
     setContents: function(note) {
