@@ -39,7 +39,7 @@ var Sidenote = {
         };
 
         Sidenote.state.notes.push(rootNote);
-        Sidenote.createNoteDiv(divId)
+        Sidenote.createNoteDiv(divId);
         Sidenote.setContents(rootNote);
     },
 
