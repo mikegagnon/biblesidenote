@@ -12,12 +12,19 @@ var Sidenote = {
         notes: [],
         editors: {},
         contents: undefined,
+        numVisibleColumns: SidenoteSetup.numVisibleColumns,
+        noteWidth: undefined,
     },
 
     init: function() {
+        Sidenote.state.noteWidth = Sidenote.noteWidth();
         Sidenote.initContents();
         Sidenote.initTitle();
         Sidenote.initRootNote();
+    },
+
+    noteWidth: function() {
+        return ($("#note-container").width() - Sidenote.constant.marginLeft) / Sidenote.state.numVisibleColumns;
     },
 
     initContents: function() {
@@ -50,7 +57,7 @@ var Sidenote = {
         html += "</div>";
 
         $("#note-container").append(html);
-
+        $("#" + divId).css("width", Sidenote.state.noteWidth);
         Sidenote.newEditor(divId);
     },
 
