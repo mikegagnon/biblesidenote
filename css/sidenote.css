@@ -6,6 +6,7 @@ body {
 
 #title h1 {
     margin: 0px;
+    display: inline;
 }
 
 .ql-container.ql-snow {
@@ -46,4 +47,17 @@ body {
 
 .note {
     position: absolute;
+}
+
+#menu {
+    float: right;
+    font-size: 10px;
+    background-color: #fff;
+}
+
+#dropdownMenuButton {
+    background-color: #fff;
+    color: #000;
+    margin-right: 10px;
+    border: 1px solid #ccc;
 }

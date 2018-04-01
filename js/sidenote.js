@@ -3,7 +3,7 @@ var Sidenote = {
 
     constant: {
         uuidChars: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
-        uuidLen: 10,
+        uuidLen: 22,
         marginLeft: 20,
     },
 
@@ -21,6 +21,7 @@ var Sidenote = {
         Sidenote.state.noteWidth = Sidenote.noteWidth();
         Sidenote.initContents();
         Sidenote.initTitle();
+        Sidenote.positionMenu();
         Sidenote.initRootNote();
         Sidenote.positionContainer();
     },
@@ -44,6 +45,13 @@ var Sidenote = {
     initTitle: function() {
         $("#title h1").text(SidenoteSetup.title);
         $("#title").css("margin-left", Sidenote.constant.marginLeft);
+    },
+
+    positionMenu: function() {
+        const menuHeight = $("#menu").outerHeight(true);
+        const titleHeight = $("#title").outerHeight(true);
+        const top = (titleHeight - menuHeight) / 2;
+        $("#menu").css("top", top);
     },
 
     initRootNote: function() {
