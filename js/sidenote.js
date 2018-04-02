@@ -5,6 +5,7 @@ var Sidenote = {
         uuidChars: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
         uuidLen: 22,
         marginLeft: 20,
+        toolbarHeight: undefined,
     },
 
     state: {
@@ -14,6 +15,7 @@ var Sidenote = {
         contents: undefined,
         numVisibleColumns: SidenoteSetup.numVisibleColumns,
         noteWidth: undefined,
+        mode: SidenoteSetup.mode,
     },
 
     init: function() {
@@ -23,19 +25,13 @@ var Sidenote = {
         Sidenote.initTitle();
         Sidenote.positionMenu();
         Sidenote.initRootNote();
+        Sidenote.initToolbarHeight();
         Sidenote.positionContainer();
+        Sidenote.setMode();
     },
 
     noteWidth: function() {
         return ($("#note-container").width() - Sidenote.constant.marginLeft) / Sidenote.state.numVisibleColumns;
-    },
-
-    positionContainer: function() {
-        var top = $("#title").outerHeight(true) +
-            $("#breadcrumbs").outerHeight(true);
-
-        $("#note-container").css("top", top);
-        $("#note-container").css("left", 0);
     },
 
     initContents: function() {
@@ -119,12 +115,95 @@ var Sidenote = {
         return Sidenote.state.editors[note.divId];
     },
 
+    initToolbarHeight: function() {
+        Sidenote.constant.toolbarHeight = $(".ql-toolbar").outerHeight(true);
+    },
+
+    positionContainer: function() {
+        var top = $("#title").outerHeight(true) +
+            $("#breadcrumbs").outerHeight(true);
+
+        $("#note-container").css("top", top);
+        $("#note-container").css("left", 0);
+    },
+
+    setMode: function() {
+        if (Sidenote.state.mode === "presentation") {
+            Sidenote.state.mode = "edit";
+            Sidenote.toggleMode();
+        }
+    },
+
     createUuid: function() {
       var uuid = "";
       for (var i = 0; i < Sidenote.constant.uuidLen; i++) {
         uuid += Sidenote.constant.uuidChars.charAt(Math.floor(Math.random() * Sidenote.constant.uuidChars.length));
       }
       return uuid;
+    },
+
+    toggleMode: function() {
+        Sidenote.state.mode = Sidenote.state.mode === "presentation" ? "edit" : "presentation";
+
+        if (Sidenote.state.mode == "presentation") {
+            Sidenote.disableEditors();
+            Sidenote.moveNotesUpByToolbarHeight();
+            Sidenote.hideAllToolbars();
+            $("#modeButton").text("Edit mode");
+            var scrollTop = $(".ql-toolbar").outerHeight(true);
+            $("#note-container").scrollTop(scrollTop);
+        } else {
+            Sidenote.enableEditors();
+            Sidenote.moveNotesDownByToolbarHeight();
+            Sidenote.showAllToolbars();
+            $("#modeButton").text("Presentation mode");
+            var scrollTop = 0;
+            $("#note-container").scrollTop(scrollTop);
+        }
+    },
+
+    forEachEditor: function(func) {
+        const editorKeys = Object.keys(Sidenote.state.editors);
+
+        editorKeys.forEach(function(key){
+            const editor = Sidenote.state.editors[key];
+            func(editor);
+        });
+
+    },
+
+    disableEditors: function() {
+        Sidenote.forEachEditor(function(editor) {editor.disable() });
+    },
+
+    enableEditors: function() {
+        Sidenote.forEachEditor(function(editor) {editor.enable() });
+    },
+
+    hideAllToolbars: function() {
+        $(".ql-toolbar").addClass("hidden");
+    },
+
+    showAllToolbars: function() {
+        $(".ql-toolbar").removeClass("hidden");
+    },
+
+    repositionNotes: function(sign) {
+        const delta = sign * Sidenote.constant.toolbarHeight;
+
+        $(".note").each(function(_, note){
+            const oldTop = parseFloat($(note).css("top"));
+            const newTop = oldTop + delta;
+            $(note).css("top", newTop);
+        });
+    },
+
+    moveNotesUpByToolbarHeight: function() {
+        Sidenote.repositionNotes(-1);
+    },
+
+    moveNotesDownByToolbarHeight: function() {
+        Sidenote.repositionNotes(1);
     },
 }
 

@@ -40,9 +40,9 @@ body {
 }
 
 #note-container {
-     position: fixed;
-     height: 100%;
-     width: 100%;
+    position: fixed;
+    height: 100%;
+    width: 100%;
 }
 
 .note {
@@ -60,4 +60,8 @@ body {
     color: #000;
     margin-right: 10px;
     border: 1px solid #ccc;
+}
+
+.hidden {
+    display: none;
 }
