@@ -59,7 +59,8 @@ var Sidenote = {
         const columnPosition = 0;
         const deltas = Sidenote.state.contents[uuid];
 
-        Sidenote.createNote(noteName, divId, uuid, columnPosition, deltas);
+        const note = Sidenote.createNote(noteName, divId, uuid, columnPosition, deltas);
+        Sidenote.noteFocusIn(note.divId);
     },
 
     createNoteDiv: function(divId, columnPosition) {
@@ -124,7 +125,7 @@ var Sidenote = {
     },
 
     hideToolbar: function(divId) {
-        $("#" + divId + " .ql-toolbar").addClass("more-hidden");
+        $("#" + divId + " .ql-toolbar").addClass("hidden");
     },
 
     bringNoteToTop: function(divId) {
