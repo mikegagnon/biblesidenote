@@ -295,6 +295,7 @@ var Sidenote = {
         Sidenote.state.notes.push(note);
         Sidenote.createNoteDiv(note.divId, note.columnPosition);
         Sidenote.setContents(note);
+        Sidenote.hideToolbar(note.divId);
         return note;
     },
 }
