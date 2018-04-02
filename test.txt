@@ -1,0 +1,2 @@
+- Start in presentation/edit mode
+- Use menu to switch presentation/edit mode
