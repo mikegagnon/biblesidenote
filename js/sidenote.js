@@ -20,8 +20,7 @@ var Sidenote = {
 
     init: function() {
         $("#breadcrumbs").text("foo");
-        Sidenote.state.noteWidth = Sidenote.noteWidth();
-        Sidenote.initContents();
+        Sidenote.initState();
         Sidenote.initTitle();
         Sidenote.positionMenu();
         Sidenote.initRootNote();
@@ -34,8 +33,11 @@ var Sidenote = {
         return ($("#note-container").width() - Sidenote.constant.marginLeft) / Sidenote.state.numVisibleColumns;
     },
 
-    initContents: function() {
+    initState: function() {
+        Sidenote.state.noteWidth = Sidenote.noteWidth();
         Sidenote.state.contents = SidenoteSetup.contents;
+        Sidenote.state.uuidToNoteName = SidenoteSetup.uuidToNoteName;
+        Sidenote.state.noteNameToUuid = SidenoteSetup.noteNameToUuid
     },
 
     initTitle: function() {
