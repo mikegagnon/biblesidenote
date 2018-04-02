@@ -4695,8 +4695,22 @@ var Link = function (_Inline) {
     }
   }, {
     key: 'sanitize',
-    value: function sanitize(url) {
-      return _sanitize(url, this.PROTOCOL_WHITELIST) ? url : this.SANITIZED_URL;
+    value: function sanitize(link) {
+      // Sidenote
+      if (_sanitize(link, this.PROTOCOL_WHITELIST)) {
+        return link
+      } else {
+
+        if (!Sidenote.validLink(link)) {
+          // TODO: modal?
+          alert("Invalid link");
+          return this.SANITIZED_URL;
+        }
+
+        var uuidLink = Sidenote.getOrCreateUuidLink(link);
+        Sidenote.openNote(link, uuidLink);
+        return "javascript:Sidenote.openNote('" + uuidLink + "')";
+      }
     }
   }]);
 
@@ -4706,7 +4720,7 @@ var Link = function (_Inline) {
 Link.blotName = 'link';
 Link.tagName = 'A';
 Link.SANITIZED_URL = 'about:blank';
-Link.PROTOCOL_WHITELIST = ['http', 'https', 'mailto', 'tel'];
+Link.PROTOCOL_WHITELIST = ['http', 'https', 'mailto', 'tel', 'javascript'];
 
 function _sanitize(url, protocols) {
   var anchor = document.createElement('a');
