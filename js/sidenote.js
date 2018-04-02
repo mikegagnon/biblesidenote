@@ -57,6 +57,7 @@ var Sidenote = {
         const columnPosition = 0;
 
         const note = Sidenote.pushEtc(uuid, columnPosition);
+        Sidenote.state.selectedNoteDivId = note.divId;
         Sidenote.noteFocusIn(note.divId);
     },
 
@@ -126,9 +127,16 @@ var Sidenote = {
     },
 
     noteFocusIn: function(divId) {
+        Sidenote.saveSelectedNote();
         Sidenote.state.selectedNoteDivId = divId;
         Sidenote.showToolbar(divId);
         Sidenote.bringNoteToTop(divId);
+    },
+
+    saveSelectedNote: function() {
+        const note = Sidenote.getSelectedNote();
+        Sidenote.saveDeltas(note);
+        return note;
     },
 
     showToolbar: function(divId) {
@@ -275,9 +283,8 @@ var Sidenote = {
     },
 
     saveDeltasAndGetCp: function() {
-        const fromNote = Sidenote.getSelectedNote();
+        const fromNote = Sidenote.saveSelectedNote();
         const cp = fromNote.columnPosition + 1;
-        Sidenote.saveDeltas(fromNote);
         Sidenote.clearNotes(cp);
         return cp;
     },
