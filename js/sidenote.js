@@ -108,6 +108,7 @@ var Sidenote = {
     noteFocusIn: function(divId) {
         Sidenote.state.selectedNoteDivId = divId;
         Sidenote.showToolbar(divId);
+        Sidenote.bringNoteToTop(divId);
     },
 
     showToolbar: function(divId) {
@@ -124,6 +125,16 @@ var Sidenote = {
 
     hideToolbar: function(divId) {
         $("#" + divId + " .ql-toolbar").addClass("more-hidden");
+    },
+
+    bringNoteToTop: function(divId) {
+        for (var i = 0; i < Sidenote.state.notes.length; i++) {
+            const note = Sidenote.state.notes[i];
+            $("#" + note.divId).css("z-index", "0");
+        }
+
+        // Bring divId to top
+        $("#" + divId).css("z-index", "1");
     },
 
     positionToolbar: function(divId) {

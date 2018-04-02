@@ -22,6 +22,7 @@ body {
     border-bottom: 1px solid #ccc;
     border-top: 0px;
     width: 100%;
+    z-index: 2; /* z-index 0 and 1 are used for notes */
 }
 
 #breadcrumbs {
@@ -69,4 +70,8 @@ body {
 .ql-editor {
     padding: 0px;
     margin-right: 20px;
+}
+
+.ql-tooltip {
+    z-index: 3; /* Place above toolbars and notes */
 }
