@@ -53,18 +53,13 @@ var Sidenote = {
     },
 
     initRootNote: function() {
+        const uuid = SidenoteSetup.rootUuid;
+        const noteName = Sidenote.state.uuidToNoteName[uuid];
+        const divId = undefined;
+        const columnPosition = 0;
+        const deltas = Sidenote.state.contents[uuid];
 
-        const divId = Sidenote.createUuid();
-
-        const rootNote = {
-            divId: divId,
-            uuid: SidenoteSetup.rootUuid,
-            columnPosition: 0,
-        };
-
-        Sidenote.state.notes.push(rootNote);
-        Sidenote.createNoteDiv(divId, rootNote.columnPosition);
-        Sidenote.setContents(rootNote);
+        Sidenote.createNote(noteName, divId, uuid, columnPosition, deltas);
     },
 
     createNoteDiv: function(divId, columnPosition) {
