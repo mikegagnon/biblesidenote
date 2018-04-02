@@ -27,6 +27,8 @@ var Sidenote = {
         Sidenote.initRootNote();
         Sidenote.positionContainer();
         Sidenote.setMode();
+        Sidenote.sizeSidenoteContainerHeight();
+        $(window).resize(Sidenote.resizeWindow);
     },
 
     initState: function() {
@@ -207,6 +209,16 @@ var Sidenote = {
         }
     },
 
+    resizeWindow: function() {
+        Sidenote.sizeSidenoteContainerHeight();
+    },
+
+    sizeSidenoteContainerHeight: function() {
+        const windowHeight = $(window).outerHeight();
+        const top = parseFloat($("#note-container").css("top"));
+        $("#note-container").height(windowHeight - top);
+    },
+
     createUuid: function() {
       var uuid = "";
       for (var i = 0; i < Sidenote.constant.uuidLen; i++) {
@@ -234,6 +246,8 @@ var Sidenote = {
             var scrollTop = 0;
             $("#note-container").scrollTop(scrollTop);
         }
+
+        Sidenote.sizeSidenoteContainerHeight();
     },
 
     forEachEditor: function(func) {
