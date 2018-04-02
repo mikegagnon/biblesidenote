@@ -295,7 +295,7 @@ var Sidenote = {
             columnPosition: columnPosition,
         };
 
-        const defaultDeltas =  {"ops":[{"insert": escape(noteName)},{"attributes":{"header":2},"insert":"\n"}]}
+        const defaultDeltas =  {"ops":[{"insert": noteName},{"attributes":{"header":2},"insert":"\n"}]}
         deltas = deltas ? deltas : defaultDeltas;
         Sidenote.state.contents[note.uuid] = deltas;
 
