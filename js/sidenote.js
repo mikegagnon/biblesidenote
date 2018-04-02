@@ -276,8 +276,10 @@ var Sidenote = {
 
     saveDeltasAndGetCp: function() {
         const fromNote = Sidenote.getSelectedNote();
+        const cp = fromNote.columnPosition + 1;
         Sidenote.saveDeltas(fromNote);
-        return fromNote.columnPosition + 1;
+        Sidenote.clearNotes(cp);
+        return cp;
     },
 
     getSelectedNote: function() {
@@ -294,6 +296,18 @@ var Sidenote = {
     saveDeltas: function(note) {
         const editor = Sidenote.getEditor(note);
         Sidenote.state.contents[note.uuid] = editor.getContents();
+    },
+
+    clearNotes: function(columnPosition) {
+        for (var i = 0; i < Sidenote.state.notes.length; i++) {
+            const note = Sidenote.state.notes[i];
+            if (note.columnPosition >= columnPosition) {
+                Sidenote.state.notes[i] = undefined;
+                $("#" + note.divId).remove();
+            }
+        }
+
+        Sidenote.state.notes = Sidenote.state.notes.filter(function(a){return a});
     },
 
     createNote: function(noteName, uuid, columnPosition) {
