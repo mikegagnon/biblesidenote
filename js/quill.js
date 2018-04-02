@@ -4707,9 +4707,16 @@ var Link = function (_Inline) {
           return this.SANITIZED_URL;
         }
 
-        var uuidLink = Sidenote.getOrCreateUuidLink(link);
-        Sidenote.openNote(link, uuidLink);
-        return "javascript:Sidenote.openNote('" + link + "', '" + uuidLink + "')";
+        var uuid = Sidenote.getUuidLink(link);
+
+        if (uuid) {
+          Sidenote.openNote(uuid);
+        } else {
+          uuid = Sidenote.createUuid();
+          Sidenote.createAndOpenNote(uuid, link);
+        }
+
+        return "javascript:Sidenote.openNote('" + uuid + "')";
       }
     }
   }]);

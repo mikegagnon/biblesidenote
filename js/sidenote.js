@@ -24,7 +24,6 @@ var Sidenote = {
         Sidenote.initTitle();
         Sidenote.positionMenu();
         Sidenote.initRootNote();
-        Sidenote.initToolbarHeight();
         Sidenote.positionContainer();
         Sidenote.setMode();
     },
@@ -55,12 +54,25 @@ var Sidenote = {
     initRootNote: function() {
         const uuid = SidenoteSetup.rootUuid;
         const noteName = Sidenote.state.uuidToNoteName[uuid];
-        const divId = undefined;
         const columnPosition = 0;
-        const deltas = Sidenote.state.contents[uuid];
 
-        const note = Sidenote.createNote(noteName, divId, uuid, columnPosition, deltas);
+        const note = Sidenote.pushEtc(uuid, columnPosition);
         Sidenote.noteFocusIn(note.divId);
+    },
+
+    pushEtc: function(uuid, columnPosition) {
+        const note = {
+            divId: Sidenote.createUuid(),
+            uuid: uuid,
+            columnPosition: columnPosition,
+        };
+
+        Sidenote.state.notes.push(note);
+        Sidenote.createNoteDiv(note.divId, note.columnPosition);
+        Sidenote.setContents(note);
+        Sidenote.hideToolbar(note.divId);
+
+        return note;
     },
 
     createNoteDiv: function(divId, columnPosition) {
@@ -73,9 +85,12 @@ var Sidenote = {
 
         Sidenote.newEditor(divId);
 
+        if (!Sidenote.constant.toolbarHeight) {
+            Sidenote.initToolbarHeight();
+        }
+
         const div = "#" + divId;
-        const toolbarHeight = $(".ql-toolbar").outerHeight(true);
-        $(div).css("top", toolbarHeight);
+        $(div).css("top", Sidenote.constant.toolbarHeight);
         $(div).css("width", Sidenote.state.noteWidth);
         $(div).css("left", Sidenote.getColumnLeftPosition(columnPosition));
         $("#" + divId).focusin(function(){
@@ -100,6 +115,10 @@ var Sidenote = {
         Sidenote.state.editors[divId] = editor;
 
         Sidenote.positionToolbar(divId);
+    },
+
+    initToolbarHeight: function() {
+        Sidenote.constant.toolbarHeight = $(".ql-toolbar").outerHeight(true);
     },
 
     getColumnLeftPosition: function(columnPosition) {
@@ -152,10 +171,6 @@ var Sidenote = {
 
     getEditor: function(note) {
         return Sidenote.state.editors[note.divId];
-    },
-
-    initToolbarHeight: function() {
-        Sidenote.constant.toolbarHeight = $(".ql-toolbar").outerHeight(true);
     },
 
     positionContainer: function() {
@@ -250,22 +265,19 @@ var Sidenote = {
         return true;
     },
 
-    getOrCreateUuidLink: function(link) {
-        if (link in Sidenote.state.noteNameToUuid) {
-            return Sidenote.state.noteNameToUuid[link];
-        } else {
-            const uuid = Sidenote.createUuid();
-            Sidenote.state.noteNameToUuid[link] = uuid;
-            Sidenote.state.uuidToNoteName[uuid] = link;
-            return uuid;
-        }
+    getUuidLink: function(link) {
+        return Sidenote.state.noteNameToUuid[link];
     },
 
-    openNote: function(noteName, uuidLink) {
+    createAndOpenNote: function(uuid, noteName) {
+        const columnPosition = Sidenote.saveDeltasAndGetCp();
+        Sidenote.createNote(noteName, uuid, columnPosition);
+    },
+
+    saveDeltasAndGetCp: function() {
         const fromNote = Sidenote.getSelectedNote();
         Sidenote.saveDeltas(fromNote);
-        const columnPosition = fromNote.columnPosition + 1;
-        const newNote = Sidenote.createNote(noteName, undefined, uuidLink, columnPosition, undefined);
+        return fromNote.columnPosition + 1;
     },
 
     getSelectedNote: function() {
@@ -284,27 +296,18 @@ var Sidenote = {
         Sidenote.state.contents[note.uuid] = editor.getContents();
     },
 
-    createNote: function(noteName, divId, uuid, columnPosition, deltas) {
-
-        divId = divId ? divId : Sidenote.createUuid();
-        uuid = uuid ? uuid : Sidenote.createUuid();
-
-        const note = {
-            divId: divId,
-            uuid: uuid,
-            columnPosition: columnPosition,
-        };
-
-        const defaultDeltas =  {"ops":[{"insert": noteName},{"attributes":{"header":2},"insert":"\n"}]}
-        deltas = deltas ? deltas : defaultDeltas;
-        Sidenote.state.contents[note.uuid] = deltas;
-
-        Sidenote.state.notes.push(note);
-        Sidenote.createNoteDiv(note.divId, note.columnPosition);
-        Sidenote.setContents(note);
-        Sidenote.hideToolbar(note.divId);
-        return note;
+    createNote: function(noteName, uuid, columnPosition) {
+        Sidenote.state.noteNameToUuid[noteName] = uuid;
+        Sidenote.state.uuidToNoteName[uuid] = noteName;
+        const deltas = {"ops":[{"insert": noteName},{"attributes":{"header":2},"insert":"\n"}]}
+        Sidenote.state.contents[uuid] = deltas;
+        Sidenote.pushEtc(uuid, columnPosition);
     },
+
+    openNote: function(uuid) {
+        const columnPosition = Sidenote.saveDeltasAndGetCp();
+        Sidenote.pushEtc(uuid, columnPosition);
+    }
 }
 
 window.onload = function() {
