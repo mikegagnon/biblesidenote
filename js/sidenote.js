@@ -112,6 +112,23 @@ var Sidenote = {
 
     noteFocusIn: function(divId) {
         Sidenote.state.selectedNoteDivId = divId;
+        Sidenote.showToolbar(divId);
+    },
+
+    showToolbar: function(divId) {
+        Sidenote.hideAllToolbars();
+        $("#" + divId + " .ql-toolbar").removeClass("hidden");
+    },
+
+    hideAllToolbars: function() {
+        for (var i = 0; i < Sidenote.state.notes.length; i++) {
+            const note = Sidenote.state.notes[i];
+            Sidenote.hideToolbar(note.divId);
+        }
+    },
+
+    hideToolbar: function(divId) {
+        $("#" + divId + " .ql-toolbar").addClass("more-hidden");
     },
 
     positionToolbar: function(divId) {
