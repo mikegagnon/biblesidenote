@@ -22,6 +22,7 @@ body {
     border-bottom: 1px solid #ccc;
     border-top: 0px;
     width: 100%;
+    background-color: white;
     z-index: 2; /* z-index 0 and 1 are used for notes */
 }
 
@@ -44,7 +45,7 @@ body {
     position: fixed;
     height: 100%;
     width: 100%;
-    overflow-y: scroll;
+    overflow: scroll;
 }
 
 .note {
