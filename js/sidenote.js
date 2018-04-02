@@ -6,6 +6,7 @@ var Sidenote = {
         uuidLen: 22,
         marginLeft: 20,
         toolbarHeight: undefined,
+        animationDuration: 400,
     },
 
     state: {
@@ -72,6 +73,7 @@ var Sidenote = {
         Sidenote.createNoteDiv(note.divId, note.columnPosition);
         Sidenote.setContents(note);
         Sidenote.hideToolbar(note.divId);
+        Sidenote.slide(note);
 
         return note;
     },
@@ -153,6 +155,15 @@ var Sidenote = {
 
     hideToolbar: function(divId) {
         $("#" + divId + " .ql-toolbar").addClass("hidden");
+    },
+
+    slide: function(toNote) {
+        const cp = toNote.columnPosition;
+        const leftPx = $("#" + toNote.divId).css("left");
+        const left = parseInt(leftPx);
+        const right = left + Sidenote.state.noteWidth;
+        const leftPos = $("#sidenote-container").scrollLeft();
+        $("#note-container").animate({scrollLeft: right}, { duration: Sidenote.constant.animationDuration, queue: false });
     },
 
     bringNoteToTop: function(divId) {
