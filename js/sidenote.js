@@ -108,7 +108,7 @@ var Sidenote = {
     },
 
     setContents: function(note) {
-        Sidenote.getEditor(note).setContents(Sidenote.state.contents[note.uuid].quill);
+        Sidenote.getEditor(note).setContents(Sidenote.state.contents[note.uuid]);
     },
 
     getEditor: function(note) {
