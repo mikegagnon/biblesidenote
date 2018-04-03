@@ -576,13 +576,32 @@ var Sidenote = {
     },
 
     getNoteNameLink: function(uuidLink) {
-        console.log("parsePasssageNameFromUuid");
+        const passage = Sidenote.getPassage(uuidLink);
+        const noteName = Sidenote.state.uuidToNoteName[passage.uuid];
+
+        if (!passage.begin) {
+            if (passage.end) {
+                throw Error;
+            }
+            return noteName;
+        } else if (!passage.end) {
+            return noteName + ":" + passage.begin;
+        } else {
+            return noteName + ":" + passage.begin + "-" + passage.end;
+        }
+    },
+
+    getPassage: function(uuidLink) {
         const parts = uuidLink.split(":");
-        console.log(parts);
+        const uuid = parts[0];
 
         // Todo check with segment names
         if (parts.length == 1) {
-            return Sidenote.state.uuidToNoteName[parts[0]];
+            return {
+                uuid: uuid,
+                begin: undefined,
+                end: undefined,
+            };
         } else if (parts.length > 2) {
             throw "Error";
         } else {
@@ -603,7 +622,12 @@ var Sidenote = {
                 if (isNaN(begin)) {
                     throw "Error";
                 } else {
-                    return noteName + ":" + begin;
+                    return {
+                        uuid: uuid,
+                        begin: begin,
+                        end: undefined
+                    }
+                    //return noteName + ":" + begin;
                 }
             } else if (beginEnd.length > 2) {
                 throw "Error";
@@ -614,9 +638,17 @@ var Sidenote = {
                 if (isNaN(begin) || isNaN(end)) {
                     throw "Error";
                 } else if (begin != end) {
-                    return noteName + ":" + begin + "-" + end;
+                    return {
+                        uuid: uuid,
+                        begin: begin,
+                        end: end,
+                    }
                 } else {
-                    return noteName + ":" + begin;
+                    return {
+                        uuid: uuid,
+                        begin: begin,
+                        end: undefined,
+                    }
                 }
             }
         }
