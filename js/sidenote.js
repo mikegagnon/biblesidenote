@@ -412,6 +412,9 @@ var Sidenote = {
             } else {
                 top = $("#" + fromNote.divId).css("top");
             }
+
+            $("#note-container").scrollTop(Sidenote.state.currentScrollTop);
+
         }
 
         $("#" + newNote.divId).css("top", top);
