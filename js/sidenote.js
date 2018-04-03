@@ -390,8 +390,23 @@ var Sidenote = {
     },
 
     openNote: function(uuid) {
+        const fromNote = Sidenote.saveSelectedNote();
         const columnPosition = Sidenote.saveDeltasAndGetCp();
-        Sidenote.pushEtc(uuid, columnPosition);
+        const newNote = Sidenote.pushEtc(uuid, columnPosition);
+        const fromNoteName = Sidenote.state.uuidToNoteName[fromNote.uuid];
+        var top = undefined;
+
+        if (Sidenote.state.segmentNames.has(fromNoteName)) {
+            top = Sidenote.state.currentScrollTop + Sidenote.topModifier();
+        } else {
+            top = $("#" + fromNote.divId).css("top");
+        }
+
+        $("#" + newNote.divId).css("top", top);
+    },
+
+    topModifier: function() {
+        return Sidenote.state.mode == "edit" ? Sidenote.constant.toolbarHeight : 0;
     },
 
     registerScroll: function() {
