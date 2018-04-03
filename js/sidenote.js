@@ -394,30 +394,6 @@ var Sidenote = {
         Sidenote.pushEtc(uuid, columnPosition);
     },
 
-    prependSegment: function(newNoteUuid, oldNote) {
-
-        const newNote = Sidenote.pushEtc(newNoteUuid, oldNote.columnPosition);
-        const divId = newNote.divId;
-
-        const newDivHeight = parseFloat($("#" + divId).outerHeight(true));
-
-        const top = $("#" + oldNote.divId).css("top");
-        $("#" + divId).css("top", top);
-
-        for (var i = 0; i < Sidenote.state.notes.length; i++) {
-            const note = Sidenote.state.notes[i];
-            if (note.divId != divId) {
-                const oldTop = parseFloat($("#" + note.divId).css("top"));
-                const newTop = newDivHeight + oldTop;
-                $("#" + note.divId).css("top", newTop);
-            }
-        }
-
-        const newScrollTop = Sidenote.state.currentScrollTop + newDivHeight;
-
-        $("#note-container").scrollTop(newScrollTop);
-    },
-
     registerScroll: function() {
         $("#note-container").scroll(Sidenote.onScroll);
         Sidenote.onScroll();
@@ -449,7 +425,7 @@ var Sidenote = {
         const belowBorderBottom = belowBorderNoteBottom;
         const belowBorderNoteName = Sidenote.state.uuidToNoteName[belowBorderNote.uuid];
 
-        const currentScrollBottom = Sidenote.state.currentScrollTop + $("#sidenote-container").outerHeight();
+        const currentScrollBottom = Sidenote.state.currentScrollTop + $("#note-container").outerHeight();
 
         var addedSegment = false;
 
@@ -457,10 +433,21 @@ var Sidenote = {
             !(typeof Sidenote.state.segmentIndex[aboveBorderNoteName] === "undefined")) {
 
             const newNoteName = Sidenote.state.segmentIndex[aboveBorderNoteName].prev;
-            const newNoteUuid = Sidenote.state.noteNameToUuid[newNoteName]
+            const newNoteUuid = Sidenote.state.noteNameToUuid[newNoteName];
 
             Sidenote.prependSegment(newNoteUuid, aboveBorderNote);
-            Sidenote.state.currentScrollTop = $("#sidenote-container").scrollTop();
+            Sidenote.state.currentScrollTop = $("#note-container").scrollTop();
+            addedSegment = true;
+        }
+
+        if (currentScrollBottom >= belowBorderBottom &&
+            !(typeof Sidenote.state.segmentIndex[belowBorderNoteName] === "undefined")) {
+
+            const newNoteName = Sidenote.state.segmentIndex[belowBorderNoteName].next;
+            const newNoteUuid = Sidenote.state.noteNameToUuid[newNoteName];
+
+            Sidenote.appendSegment(newNoteUuid, belowBorderNote);
+            Sidenote.state.currentScrollTop = $("#note-container").scrollTop();
             addedSegment = true;
         }
 
@@ -541,6 +528,41 @@ var Sidenote = {
         }
 
         return segmentNotesByColumnPosition;
+    },
+
+    prependSegment: function(newNoteUuid, oldNote) {
+
+        const newNote = Sidenote.pushEtc(newNoteUuid, oldNote.columnPosition);
+        const divId = newNote.divId;
+
+        const newDivHeight = parseFloat($("#" + divId).outerHeight(true));
+
+        const top = $("#" + oldNote.divId).css("top");
+        $("#" + divId).css("top", top);
+
+        for (var i = 0; i < Sidenote.state.notes.length; i++) {
+            const note = Sidenote.state.notes[i];
+            if (note.divId != divId) {
+                const oldTop = parseFloat($("#" + note.divId).css("top"));
+                const newTop = newDivHeight + oldTop;
+                $("#" + note.divId).css("top", newTop);
+            }
+        }
+
+        const newScrollTop = Sidenote.state.currentScrollTop + newDivHeight;
+
+        $("#note-container").scrollTop(newScrollTop);
+    },
+
+    appendSegment: function(newNoteUuid, oldNote) {
+        const newNote = Sidenote.pushEtc(newNoteUuid, oldNote.columnPosition);
+
+        const oldDivTop = parseFloat($("#" + oldNote.divId).css("top"));
+        const oldDivHeight = $("#" + oldNote.divId).outerHeight();
+        const newDivTop = oldDivTop + oldDivHeight;
+
+        $("#" + newNote.divId).css("top", newDivTop);
+
     },
 }
 
