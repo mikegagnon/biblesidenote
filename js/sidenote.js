@@ -1,3 +1,4 @@
+// TODO: image modal in quill
 
 var Sidenote = {
 
