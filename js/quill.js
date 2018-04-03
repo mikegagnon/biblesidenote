@@ -4698,7 +4698,7 @@ var Link = function (_Inline) {
     value: function sanitize(link) {
       // Sidenote
       if (_sanitize(link, this.PROTOCOL_WHITELIST)) {
-        return link
+        return link;
       } else {
 
         if (!Sidenote.validLink(link)) {
@@ -6786,6 +6786,12 @@ var BaseTooltip = function (_Tooltip) {
       this.root.classList.remove('ql-hidden');
       this.root.classList.add('ql-editing');
       if (preview != null) {
+        // Sidenote
+        if (preview.startsWith("javascript:")) {
+          var parts = preview.split("'");
+          var uuid = parts[parts.length - 2];
+          preview = Sidenote.state.uuidToNoteName[uuid];
+        }
         this.textbox.value = preview;
       } else if (mode !== this.root.getAttribute('data-mode')) {
         this.textbox.value = '';

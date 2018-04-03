@@ -13,6 +13,8 @@ var Sidenote = {
         notes: [],
         editors: {},
         contents: undefined,
+        uuidToNoteName: undefined,
+        noteNameToUuid: undefined,
         numVisibleColumns: SidenoteSetup.numVisibleColumns,
         noteWidth: undefined,
         mode: SidenoteSetup.mode,
