@@ -1,5 +1,5 @@
 // TODO: image modal in quill
-// TODO: rm outlines on clearNotes
+
 var Sidenote = {
 
     constant: {
@@ -321,6 +321,12 @@ var Sidenote = {
             const newTop = oldTop + delta;
             $(note).css("top", newTop);
         });
+
+        $(".outline").each(function(_, outline){
+            const oldTop = parseFloat($(outline).css("top"));
+            const newTop = oldTop + delta;
+            $(outline).css("top", newTop);
+        });
     },
 
     moveNotesUpByToolbarHeight: function() {
@@ -379,6 +385,17 @@ var Sidenote = {
         }
 
         Sidenote.state.notes = Sidenote.state.notes.filter(function(a){return a});
+
+        for (var i = 0; i < Sidenote.state.outlines.length; i++) {
+            const outline = Sidenote.state.outlines[i];
+            if (outline.columnPosition >= columnPosition) {
+                Sidenote.state.outlines[i] = undefined;
+                $("#" + outline.divId).remove();
+            }
+        }
+
+        Sidenote.state.outlines = Sidenote.state.outlines.filter(function(a){return a});
+
     },
 
     openNote: function(uuidLink) {
@@ -602,6 +619,13 @@ var Sidenote = {
                 const newTop = newDivHeight + oldTop;
                 $("#" + note.divId).css("top", newTop);
             }
+        }
+
+        for (var i = 0; i < Sidenote.state.outlines.length; i++) {
+            const outline = Sidenote.state.outlines[i];
+            const oldTop = parseFloat($("#" + outline.divId).css("top"));
+            const newTop = newDivHeight + oldTop;
+            $("#" + outline.divId).css("top", newTop);
         }
 
         const newScrollTop = Sidenote.state.currentScrollTop + newDivHeight;
