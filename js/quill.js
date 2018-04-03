@@ -6789,12 +6789,6 @@ var BaseTooltip = function (_Tooltip) {
       this.root.classList.remove('ql-hidden');
       this.root.classList.add('ql-editing');
       if (preview != null) {
-        // Sidenote
-        if (preview.startsWith("javascript:")) {
-          var parts = preview.split("'");
-          var uuid = parts[parts.length - 2];
-          preview = Sidenote.state.uuidToNoteName[uuid];
-        }
         this.textbox.value = preview;
       } else if (mode !== this.root.getAttribute('data-mode')) {
         this.textbox.value = '';
@@ -9880,8 +9874,8 @@ var SnowTooltip = function (_BaseTooltip) {
             if (preview.startsWith("javascript:")) {
                 _this3.preview.removeAttribute("target");
                 var parts = preview.split("'");
-                var uuid = parts[parts.length - 2];
-                textContent = Sidenote.state.uuidToNoteName[uuid];
+                var uuidLink = parts[parts.length - 2];
+                textContent = Sidenote.getNoteNameLink(uuidLink);;
             }
 
             _this3.preview.textContent = textContent;

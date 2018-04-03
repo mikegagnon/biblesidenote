@@ -573,7 +573,53 @@ var Sidenote = {
         const newDivTop = oldDivTop + oldDivHeight;
 
         $("#" + newNote.divId).css("top", newDivTop);
+    },
 
+    getNoteNameLink: function(uuidLink) {
+        console.log("parsePasssageNameFromUuid");
+        const parts = uuidLink.split(":");
+        console.log(parts);
+
+        // Todo check with segment names
+        if (parts.length == 1) {
+            return Sidenote.state.uuidToNoteName[parts[0]];
+        } else if (parts.length > 2) {
+            throw "Error";
+        } else {
+            const uuid = parts[0];
+            if (!(uuid in Sidenote.state.contents)) {
+                throw "Error";
+            }
+
+            const noteName = Sidenote.state.uuidToNoteName[parts[0]];
+
+            if (!Sidenote.state.segmentNames.has(noteName)) {
+                throw "Error";
+            }
+
+            const beginEnd = parts[1].split("-");
+            if (beginEnd.length == 1) {
+                const begin = parseInt(beginEnd[0]);
+                if (isNaN(begin)) {
+                    throw "Error";
+                } else {
+                    return noteName + ":" + begin;
+                }
+            } else if (beginEnd.length > 2) {
+                throw "Error";
+            } else {
+                const begin = parseInt(beginEnd[0]);
+                const end = parseInt(beginEnd[1]);
+
+                if (isNaN(begin) || isNaN(end)) {
+                    throw "Error";
+                } else if (begin != end) {
+                    return noteName + ":" + begin + "-" + end;
+                } else {
+                    return noteName + ":" + begin;
+                }
+            }
+        }
     },
 }
 
