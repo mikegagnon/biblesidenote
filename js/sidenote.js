@@ -98,7 +98,8 @@ var Sidenote = {
         }
 
         const div = "#" + divId;
-        $(div).css("top", Sidenote.constant.toolbarHeight);
+        const top = Sidenote.state.mode === "edit" ? Sidenote.constant.toolbarHeight : 0;
+        $(div).css("top", top);
         $(div).css("width", Sidenote.state.noteWidth);
         $(div).css("left", Sidenote.getColumnLeftPosition(columnPosition));
         $("#" + divId).focusin(function(){
