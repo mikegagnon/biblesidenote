@@ -392,10 +392,30 @@ var Sidenote = {
         const fromNoteName = Sidenote.state.uuidToNoteName[fromNote.uuid];
         var top = undefined;
 
-        if (Sidenote.state.segmentNames.has(fromNoteName)) {
-            top = Sidenote.state.currentScrollTop + Sidenote.topModifier();
+        if (passage.begin) {
+            if (!passage.end) {
+                passage.end = passage.begin;
+            }
+            const passagePosition = $("#" + newNote.divId + " .ql-editor p strong:eq(" +  (passage.begin - 1) + ")").position()
+            const passagePositionEnd = $("#" + newNote.divId + " .ql-editor p strong:eq(" +  (passage.end) + ")").position()
+
+            var fromTop;
+            if (Sidenote.state.segmentNames.has(fromNoteName)) {
+                fromTop = Sidenote.state.currentScrollTop + Sidenote.topModifier();
+            } else {
+                fromTop = parseFloat($("#" + fromNote.divId).css("top"));
+            }
+
+            const newTop = fromTop - passagePosition.top;
+            $("#" + newNote.divId).css("top", newTop);
+
         } else {
-            top = $("#" + fromNote.divId).css("top");
+
+            if (Sidenote.state.segmentNames.has(fromNoteName)) {
+                top = Sidenote.state.currentScrollTop + Sidenote.topModifier();
+            } else {
+                top = $("#" + fromNote.divId).css("top");
+            }
         }
 
         $("#" + newNote.divId).css("top", top);
