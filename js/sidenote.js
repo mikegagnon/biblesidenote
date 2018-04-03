@@ -32,6 +32,7 @@ var Sidenote = {
         Sidenote.setMode();
         Sidenote.sizeSidenoteContainerHeight();
         $(window).resize(Sidenote.resizeWindow);
+        Sidenote.registerScroll();
     },
 
     initState: function() {
@@ -237,7 +238,7 @@ var Sidenote = {
     },
 
     sizeSidenoteContainerHeight: function() {
-        const windowHeight = $(window).outerHeight();
+        const windowHeight = $(window).outerHeight(); // TODO: true?
         const top = parseFloat($("#note-container").css("top"));
         $("#note-container").height(windowHeight - top);
     },
@@ -376,8 +377,54 @@ var Sidenote = {
         const columnPosition = Sidenote.saveDeltasAndGetCp();
         Sidenote.pushEtc(uuid, columnPosition);
     },
+
+    prependSegment: function(newNoteUuid, oldNote) {
+
+        const newNote = Sidenote.pushEtc(newNoteUuid, oldNote.columnPosition);
+        const divId = newNote.divId;
+
+        const newDivHeight = parseFloat($("#" + divId).outerHeight(true));
+
+        const top = $("#" + oldNote.divId).css("top");
+        $("#" + divId).css("top", top);
+
+        for (var i = 0; i < Sidenote.state.notes.length; i++) {
+            const note = Sidenote.state.notes[i];
+            if (note.divId != divId) {
+                const oldTop = parseFloat($("#" + note.divId).css("top"));
+                const newTop = newDivHeight + oldTop;
+                $("#" + note.divId).css("top", newTop);
+            }
+        }
+
+        const newScrollTop = Sidenote.state.currentScrollTop + newDivHeight;
+
+        $("#note-container").scrollTop(newScrollTop);
+    },
+
+    registerScroll: function() {
+        $("#note-container").scroll(Sidenote.onScroll);
+        Sidenote.onScroll();
+    },
+
+    onScroll: function() {
+        Sidenote.state.currentScrollTop = $("#note-container").scrollTop();
+    },
 }
 
 window.onload = function() {
     Sidenote.init();
+
+    const newNoteUuid = Sidenote.state.noteNameToUuid["Matthew 18"];
+    const oldNoteUuid = Sidenote.state.noteNameToUuid["Matthew 19"];
+
+    var oldNote;
+    for (var i = 0; i < Sidenote.state.notes.length; i++) {
+        const note = Sidenote.state.notes[i];
+        if (note.uuid == oldNoteUuid) {
+            oldNote = note;
+        }
+    }
+
+    Sidenote.prependSegment(newNoteUuid, oldNote);
 }
