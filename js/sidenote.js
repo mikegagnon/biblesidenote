@@ -334,10 +334,6 @@ var Sidenote = {
         return true;
     },
 
-    getUuidLink: function(link) {
-        return Sidenote.state.noteNameToUuid[link];
-    },
-
     createAndOpenNote: function(uuid, noteName) {
         Sidenote.state.noteNameToUuid[noteName] = uuid;
         Sidenote.state.uuidToNoteName[uuid] = noteName;
@@ -385,7 +381,7 @@ var Sidenote = {
     },
 
     openNote: function(uuidLink) {
-        const passage = Sidenote.getPassage(uuidLink);
+        const passage = Sidenote.getPassageFromUuidLink(uuidLink);
         const fromNote = Sidenote.saveSelectedNote();
         const columnPosition = Sidenote.saveDeltasAndGetCp();
         const newNote = Sidenote.pushEtc(passage.uuid, columnPosition);
@@ -597,7 +593,7 @@ var Sidenote = {
     },
 
     getNoteNameLink: function(uuidLink) {
-        const passage = Sidenote.getPassage(uuidLink);
+        const passage = Sidenote.getPassageFromUuidLink(uuidLink);
         const noteName = Sidenote.state.uuidToNoteName[passage.uuid];
 
         if (!passage.begin) {
@@ -612,7 +608,7 @@ var Sidenote = {
         }
     },
 
-    getPassage: function(uuidLink) {
+    getPassageFromUuidLink: function(uuidLink) {
         const parts = uuidLink.split(":");
         const uuid = parts[0];
 
@@ -674,6 +670,78 @@ var Sidenote = {
             }
         }
     },
+
+    getPassageFromNoteNameLink: function(noteNamelink) {
+        const parts = noteNamelink.split(":")
+        if (parts.length == 1) {
+            const noteName = parts[0];
+            return Sidenote.getPassageForNoteName(noteName);
+        } else if (parts.length == 2) {
+            const segmentName = parts[0];
+            if (!Sidenote.state.segmentNames.has(segmentName)) {
+                return null;
+            }
+            const uuid = Sidenote.state.noteNameToUuid[segmentName];
+            const beginEnd = parts[1].split("-");
+            if (beginEnd.length == 1) {
+                const begin = parseInt(beginEnd[0]);
+                if (isNaN(begin)) {
+                    return null;
+                } else {
+                    return {
+                        uuid: uuid,
+                        begin: begin,
+                        end: begin,
+                    }
+                }
+            } else if (beginEnd.length == 2) {
+                const begin = parseInt(beginEnd[0]);
+                const end = parseInt(beginEnd[1]);
+                if (isNaN(begin) || isNaN(end)) {
+                    return null;
+                } else {
+                    return {
+                        uuid: uuid,
+                        begin: begin,
+                        end: end,
+                    }
+                }
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    },
+
+    getPassageForNoteName: function(noteName) {
+        if (noteName in Sidenote.state.noteNameToUuid) {
+            return {
+                uuid: Sidenote.state.noteNameToUuid[noteName],
+                begin: undefined,
+                end: undefined,
+            }
+        } else {
+            return {
+                uuid: Sidenote.createUuid(),
+                begin: undefined,
+                end: undefined,
+            }
+        }
+    },
+
+    getUuidLink: function(passage) {
+        if (passage.begin) {
+            if (!passage.end) {
+                throw "Error";
+            }
+            return passage.uuid + ":" + passage.begin + "-" + passage.end;
+        } else {
+            return passage.uuid;
+        }
+    }
+
+
 }
 
 window.onload = function() {

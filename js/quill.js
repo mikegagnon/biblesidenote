@@ -4704,22 +4704,23 @@ var Link = function (_Inline) {
         return link;
       } else {
 
-        if (!Sidenote.validLink(link)) {
+        var passage = Sidenote.getPassageFromNoteNameLink(link);
+
+        if (!passage) {
           // TODO: modal?
           alert("Invalid link");
           return this.SANITIZED_URL;
         }
 
-        var uuid = Sidenote.getUuidLink(link);
+        const uuidLink = Sidenote.getUuidLink(passage);
 
-        if (uuid) {
-          Sidenote.openNote(uuid);
+        if (Sidenote.state.uuidToNoteName[passage.uuid]) {
+          Sidenote.openNote(uuidLink);
         } else {
-          uuid = Sidenote.createUuid();
-          Sidenote.createAndOpenNote(uuid, link);
+          Sidenote.createAndOpenNote(passage.uuid, link);
         }
 
-        return "javascript:Sidenote.openNote('" + uuid + "')";
+        return "javascript:Sidenote.openNote('" + uuidLink + "')";
       }
     }
   }]);
