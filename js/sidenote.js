@@ -384,10 +384,11 @@ var Sidenote = {
         Sidenote.state.notes = Sidenote.state.notes.filter(function(a){return a});
     },
 
-    openNote: function(uuid) {
+    openNote: function(uuidLink) {
+        const passage = Sidenote.getPassage(uuidLink);
         const fromNote = Sidenote.saveSelectedNote();
         const columnPosition = Sidenote.saveDeltasAndGetCp();
-        const newNote = Sidenote.pushEtc(uuid, columnPosition);
+        const newNote = Sidenote.pushEtc(passage.uuid, columnPosition);
         const fromNoteName = Sidenote.state.uuidToNoteName[fromNote.uuid];
         var top = undefined;
 
