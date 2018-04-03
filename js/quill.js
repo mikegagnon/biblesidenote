@@ -4685,7 +4685,10 @@ var Link = function (_Inline) {
       var node = _get(Link.__proto__ || Object.getPrototypeOf(Link), 'create', this).call(this, value);
       value = this.sanitize(value);
       node.setAttribute('href', value);
-      node.setAttribute('target', '_blank');
+      // Sidenote
+      if (!value.startsWith("javascript:")) {
+        node.setAttribute('target', '_blank');
+      }
       return node;
     }
   }, {
@@ -9871,7 +9874,17 @@ var SnowTooltip = function (_BaseTooltip) {
           if (link != null) {
             _this3.linkRange = new _selection.Range(range.index - offset, link.length());
             var preview = _link2.default.formats(link.domNode);
-            _this3.preview.textContent = preview;
+            // Sidenote
+            var textContent = preview;
+
+            if (preview.startsWith("javascript:")) {
+                _this3.preview.removeAttribute("target");
+                var parts = preview.split("'");
+                var uuid = parts[parts.length - 2];
+                textContent = Sidenote.state.uuidToNoteName[uuid];
+            }
+
+            _this3.preview.textContent = textContent;
             _this3.preview.setAttribute('href', preview);
             _this3.show();
             _this3.position(_this3.quill.getBounds(_this3.linkRange));
