@@ -410,8 +410,17 @@ var Sidenote = {
             if (!passage.end) {
                 passage.end = passage.begin;
             }
+
+            const lineHeight = parseFloat($("#" + newNote.divId).css("line-height"))
+
             const passagePosition = $("#" + newNote.divId + " .ql-editor p strong:eq(" +  (passage.begin - 1) + ")").position()
-            const passagePositionEnd = $("#" + newNote.divId + " .ql-editor p strong:eq(" +  (passage.end) + ")").position()
+
+            var passagePositionEnd = $("#" + newNote.divId + " .ql-editor p strong:eq(" +  (passage.end) + ")").position()
+            if (!passagePositionEnd) {
+                passagePositionEnd = {
+                    top: parseFloat($("#" + newNote.divId).outerHeight(true)) - lineHeight
+                };
+            }
 
             var fromTop;
             if (Sidenote.state.segmentNames.has(fromNoteName)) {
@@ -423,7 +432,6 @@ var Sidenote = {
             const newTop = fromTop - passagePosition.top;
             $("#" + newNote.divId).css("top", newTop);
 
-            const lineHeight = parseFloat($("#" + newNote.divId).css("line-height"))
             const height = passagePositionEnd.top - passagePosition.top + lineHeight;
             const left = parseFloat($("#" + newNote.divId).css("left")) - parseFloat($("#" + newNote.divId).css("margin-right")) / 2;
             const width = parseFloat($("#" + newNote.divId).css("width"));
