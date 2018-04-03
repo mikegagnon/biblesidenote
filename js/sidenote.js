@@ -372,7 +372,7 @@ var Sidenote = {
     openNote: function(uuid) {
         const columnPosition = Sidenote.saveDeltasAndGetCp();
         Sidenote.pushEtc(uuid, columnPosition);
-    }
+    },
 }
 
 window.onload = function() {
