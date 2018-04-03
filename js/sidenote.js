@@ -123,6 +123,12 @@ var Sidenote = {
 
         Sidenote.state.editors[divId] = editor;
 
+        if (Sidenote.state.mode == "presentation") {
+            editor.disable();
+        } else {
+            editor.enable();
+        }
+
         Sidenote.positionToolbar(divId);
     },
 
@@ -355,6 +361,7 @@ var Sidenote = {
             if (note.columnPosition >= columnPosition) {
                 Sidenote.state.notes[i] = undefined;
                 $("#" + note.divId).remove();
+                delete Sidenote.state.editors[note.divId];
             }
         }
 
