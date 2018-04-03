@@ -142,9 +142,20 @@ var Sidenote = {
     },
 
     saveSelectedNote: function() {
-        const note = Sidenote.getSelectedNote();
-        Sidenote.saveDeltas(note);
-        return note;
+        const selectedNote = Sidenote.getSelectedNote();
+        const deltas = Sidenote.saveDeltas(selectedNote);
+
+        // There might be multiple notes with the same uuid as selectedNote.
+        // So, set update their editors with the deltas of selectedNote
+        for (var i = 0; i < Sidenote.state.notes.length; i++) {
+            const note = Sidenote.state.notes[i];
+            if (note.uuid === selectedNote.uuid && note.divId != selectedNote.divId) {
+                const editor = Sidenote.getEditor(note);
+                editor.setContents(deltas);
+            }
+        }
+
+        return selectedNote;
     },
 
     showToolbar: function(divId) {
@@ -333,7 +344,9 @@ var Sidenote = {
 
     saveDeltas: function(note) {
         const editor = Sidenote.getEditor(note);
-        Sidenote.state.contents[note.uuid] = editor.getContents();
+        const deltas = editor.getContents();
+        Sidenote.state.contents[note.uuid] = deltas;
+        return deltas;
     },
 
     clearNotes: function(columnPosition) {
