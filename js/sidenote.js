@@ -147,8 +147,10 @@ var Sidenote = {
     },
 
     showToolbar: function(divId) {
-        Sidenote.hideAllToolbars();
-        $("#" + divId + " .ql-toolbar").removeClass("hidden");
+        if (Sidenote.state.mode === "edit") {
+            Sidenote.hideAllToolbars();
+            $("#" + divId + " .ql-toolbar").removeClass("hidden");
+        }
     },
 
     hideAllToolbars: function() {
