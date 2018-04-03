@@ -50,6 +50,7 @@ body {
 
 .note {
     position: absolute;
+    margin-right: 10px;
 }
 
 #menu {
@@ -76,4 +77,11 @@ body {
 
 .ql-tooltip {
     z-index: 3; /* Place above toolbars and notes */
+}
+
+.outline {
+    border: 1px solid #ccc;
+    z-index: -1;
+    position: absolute;
+    background-color: #eceeef;
 }

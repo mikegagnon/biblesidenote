@@ -1,5 +1,5 @@
 // TODO: image modal in quill
-
+// TODO: rm outlines on clearNotes
 var Sidenote = {
 
     constant: {
@@ -22,6 +22,7 @@ var Sidenote = {
         mode: SidenoteSetup.mode,
         selectedNoteDivId: undefined,
         segmentNames: new Set(),
+        outlines: [],
     },
 
     init: function() {
@@ -405,6 +406,30 @@ var Sidenote = {
             const newTop = fromTop - passagePosition.top;
             $("#" + newNote.divId).css("top", newTop);
 
+            const lineHeight = parseFloat($("#" + newNote.divId).css("line-height"))
+            const height = passagePositionEnd.top - passagePosition.top + lineHeight;
+            const left = parseFloat($("#" + newNote.divId).css("left")) - parseFloat($("#" + newNote.divId).css("margin-right")) / 2;
+            const width = parseFloat($("#" + newNote.divId).css("width"));
+            const outlineDivId = Sidenote.createUuid();
+            const top = passagePosition.top + parseFloat($("#" + newNote.divId).css("top"));
+            Sidenote.state.outlines.push({
+                divId: outlineDivId,
+                columnPosition: newNote.columnPosition,
+            });
+
+            var html = '<div id="' + outlineDivId + '"';
+            html += 'class="outline"';
+            html += 'style="top: ' + top +'px;';
+            html += 'height: ' + height + 'px;';
+            html += 'width: ' + width + 'px;';
+            html += 'left: ' + left + 'px;"></div>';
+
+            $("#note-container").append(html);
+
+            // We do the +1 here so that the border for the passage outline
+            // and the border for the breadcrumbs overlap precisely
+            $("#note-container").scrollTop(Sidenote.state.currentScrollTop + 1);
+
         } else {
 
             if (Sidenote.state.segmentNames.has(fromNoteName)) {
@@ -414,10 +439,9 @@ var Sidenote = {
             }
 
             $("#note-container").scrollTop(Sidenote.state.currentScrollTop);
-
+            $("#" + newNote.divId).css("top", top);
         }
 
-        $("#" + newNote.divId).css("top", top);
     },
 
     topModifier: function() {
