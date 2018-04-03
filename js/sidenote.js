@@ -8,6 +8,7 @@ var Sidenote = {
         marginLeft: 20,
         toolbarHeight: undefined,
         animationDuration: 400,
+        triggerPrependTop: 400,
     },
 
     state: {
@@ -20,6 +21,7 @@ var Sidenote = {
         noteWidth: undefined,
         mode: SidenoteSetup.mode,
         selectedNoteDivId: undefined,
+        segmentNames: new Set(),
     },
 
     init: function() {
@@ -31,8 +33,8 @@ var Sidenote = {
         Sidenote.positionContainer();
         Sidenote.setMode();
         Sidenote.sizeSidenoteContainerHeight();
-        $(window).resize(Sidenote.resizeWindow);
         Sidenote.registerScroll();
+        $(window).resize(Sidenote.resizeWindow);
     },
 
     initState: function() {
@@ -40,6 +42,8 @@ var Sidenote = {
         Sidenote.state.contents = SidenoteSetup.contents;
         Sidenote.state.uuidToNoteName = SidenoteSetup.uuidToNoteName;
         Sidenote.state.noteNameToUuid = SidenoteSetup.noteNameToUuid;
+        Sidenote.state.segmentIndex = SidenoteSetup.segmentIndex;
+        Sidenote.initSegmentNames();
     },
 
     noteWidth: function() {
@@ -69,10 +73,15 @@ var Sidenote = {
     },
 
     pushEtc: function(uuid, columnPosition) {
+
+        const noteName = Sidenote.state.uuidToNoteName[uuid];
+        const segment = Sidenote.state.segmentNames.has(noteName);
+
         const note = {
             divId: Sidenote.createUuid(),
             uuid: uuid,
             columnPosition: columnPosition,
+            segment: segment,
         };
 
         Sidenote.state.notes.push(note);
@@ -243,6 +252,13 @@ var Sidenote = {
         $("#note-container").height(windowHeight - top);
     },
 
+    initSegmentNames: function() {
+        for (var i = 0; i < SidenoteSetup.segmentNames.length; i++ ){
+            const segmentName = SidenoteSetup.segmentNames[i];
+            Sidenote.state.segmentNames.add(segmentName);
+        }
+    },
+
     createUuid: function() {
       var uuid = "";
       for (var i = 0; i < Sidenote.constant.uuidLen; i++) {
@@ -409,22 +425,125 @@ var Sidenote = {
 
     onScroll: function() {
         Sidenote.state.currentScrollTop = $("#note-container").scrollTop();
+
+        while (Sidenote.addNewSegment()) {}
+    },
+
+    addNewSegment: function() {
+
+        const borderNotes = Sidenote.getBorderNotes();
+
+        // TODO: what to do if borderNotes.above and/or borderNotes.below is undefined?
+        if (!borderNotes.above || !borderNotes.below) {
+            throw "Error";
+        }
+
+        const aboveBorderNote = borderNotes.above;
+        const aboveBorderNoteTop = parseFloat($("#" + aboveBorderNote.divId).css("top"));
+        const aboveBorderTop = aboveBorderNoteTop + Sidenote.constant.triggerPrependTop;
+        const aboveBorderNoteName = Sidenote.state.uuidToNoteName[aboveBorderNote.uuid];
+
+        const belowBorderNote = borderNotes.below;
+        const belowBorderNoteBottom = parseFloat($("#" + belowBorderNote.divId).css("top")) +
+                                      $("#" + belowBorderNote.divId).outerHeight();
+        const belowBorderBottom = belowBorderNoteBottom;
+        const belowBorderNoteName = Sidenote.state.uuidToNoteName[belowBorderNote.uuid];
+
+        const currentScrollBottom = Sidenote.state.currentScrollTop + $("#sidenote-container").outerHeight();
+
+        var addedSegment = false;
+
+        if (Sidenote.state.currentScrollTop <= aboveBorderTop &&
+            !(typeof Sidenote.state.segmentIndex[aboveBorderNoteName] === "undefined")) {
+
+            const newNoteName = Sidenote.state.segmentIndex[aboveBorderNoteName].prev;
+            const newNoteUuid = Sidenote.state.noteNameToUuid[newNoteName]
+
+            Sidenote.prependSegment(newNoteUuid, aboveBorderNote);
+            Sidenote.state.currentScrollTop = $("#sidenote-container").scrollTop();
+            addedSegment = true;
+        }
+
+        return addedSegment;
+    },
+
+    // Among the segments at the top of each column, which of those has a top
+    // furtherest from the container top?
+    getBorderNotes: function() {
+
+        const segmentNotesByColumnPosition = Sidenote.getSegmentNotesByColumnPosition();
+
+        var aboveTop = undefined;
+        var aboveNote = undefined;
+
+        var belowBottom = undefined;
+        var belowNote = undefined;
+
+        // Find the the lowest segment note among the top-most segments
+        // for each column containing segments
+        for (cp in segmentNotesByColumnPosition) {
+            var notes = segmentNotesByColumnPosition[cp];
+
+            // find the top most note for column
+            var localMinTop = undefined;
+            var localMinNote = undefined;
+
+            var localMaxBottom = undefined;
+            var localMaxNote = undefined;
+
+            for (var i = 0; i < notes.length; i++) {
+                const note = notes[i];
+                const top = parseFloat($("#" + note.divId).css("top"));
+                const noteHeight = $("#" + note.divId).outerHeight();
+                const bottom = top + noteHeight;
+
+                if (typeof localMinTop === "undefined" || top <= localMinTop) {
+                    localMinTop = top;
+                    localMinNote = note;
+                }
+
+                if (typeof localMaxBottom === "undefined" || bottom > localMaxBottom) {
+                    localMaxBottom = bottom;
+                    localMaxNote = note;
+                }
+
+            }
+
+            if (typeof aboveTop === "undefined" || localMinTop >= aboveTop) {
+                aboveTop = localMinTop;
+                aboveNote = localMinNote;
+            }
+
+            if (typeof belowBottom === "undefined" || localMaxBottom <= belowBottom) {
+                belowBottom = localMaxBottom;
+                belowNote = localMaxNote;
+            }
+        }
+
+        return {
+            above: aboveNote,
+            below: belowNote
+        };
+    },
+
+    getSegmentNotesByColumnPosition: function() {
+        var segmentNotesByColumnPosition = {};
+
+        for (var i = 0; i < Sidenote.state.notes.length; i++) {
+            const note = Sidenote.state.notes[i];
+            const cp = note.columnPosition;
+            if (note.segment) {
+                if (!(cp in segmentNotesByColumnPosition)) {
+                    segmentNotesByColumnPosition[cp] = [];
+                }
+                segmentNotesByColumnPosition[cp].push(note);
+            }
+        }
+
+        return segmentNotesByColumnPosition;
     },
 }
 
 window.onload = function() {
     Sidenote.init();
-
-    const newNoteUuid = Sidenote.state.noteNameToUuid["Matthew 18"];
-    const oldNoteUuid = Sidenote.state.noteNameToUuid["Matthew 19"];
-
-    var oldNote;
-    for (var i = 0; i < Sidenote.state.notes.length; i++) {
-        const note = Sidenote.state.notes[i];
-        if (note.uuid == oldNoteUuid) {
-            oldNote = note;
-        }
-    }
-
-    Sidenote.prependSegment(newNoteUuid, oldNote);
 }
