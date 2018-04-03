@@ -259,15 +259,11 @@ var Sidenote = {
             Sidenote.moveNotesUpByToolbarHeight();
             Sidenote.hideAllToolbars();
             $("#modeButton").text("Edit mode");
-            var scrollTop = $(".ql-toolbar").outerHeight(true);
-            $("#note-container").scrollTop(scrollTop);
         } else {
             Sidenote.enableEditors();
             Sidenote.moveNotesDownByToolbarHeight();
             Sidenote.showAllToolbars();
             $("#modeButton").text("Presentation mode");
-            var scrollTop = 0;
-            $("#note-container").scrollTop(scrollTop);
         }
 
         Sidenote.sizeSidenoteContainerHeight();
