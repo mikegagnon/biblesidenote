@@ -339,8 +339,11 @@ var Sidenote = {
     },
 
     createAndOpenNote: function(uuid, noteName) {
-        const columnPosition = Sidenote.saveDeltasAndGetCp();
-        Sidenote.createNote(noteName, uuid, columnPosition);
+        Sidenote.state.noteNameToUuid[noteName] = uuid;
+        Sidenote.state.uuidToNoteName[uuid] = noteName;
+        const deltas = {"ops":[{"insert": noteName},{"attributes":{"header":2},"insert":"\n"}]}
+        Sidenote.state.contents[uuid] = deltas;
+        Sidenote.openNote(uuid);
     },
 
     saveDeltasAndGetCp: function() {
@@ -379,14 +382,6 @@ var Sidenote = {
         }
 
         Sidenote.state.notes = Sidenote.state.notes.filter(function(a){return a});
-    },
-
-    createNote: function(noteName, uuid, columnPosition) {
-        Sidenote.state.noteNameToUuid[noteName] = uuid;
-        Sidenote.state.uuidToNoteName[uuid] = noteName;
-        const deltas = {"ops":[{"insert": noteName},{"attributes":{"header":2},"insert":"\n"}]}
-        Sidenote.state.contents[uuid] = deltas;
-        Sidenote.pushEtc(uuid, columnPosition);
     },
 
     openNote: function(uuid) {
