@@ -28,10 +28,10 @@ var Sidenote = {
     },
 
     init: function() {
-        $("#breadcrumbs").text("foo");
         Sidenote.initState();
         Sidenote.initTitle();
         Sidenote.positionMenu();
+        Sidenote.initBreadcrumbs();
         Sidenote.initRootNote();
         Sidenote.positionContainer();
         Sidenote.setMode();
@@ -65,6 +65,18 @@ var Sidenote = {
         $("#menu").css("top", top);
     },
 
+    initBreadcrumbs: function() {
+        const top = $("#title").outerHeight(true);
+        $("#breadcrumbs").css("top", top);
+        Sidenote.positionBreadcrumbs();
+    },
+
+    positionBreadcrumbs: function() {
+        const scrollLeft = $("#note-container").scrollLeft();
+        const bcLeft = -scrollLeft;
+        $("#breadcrumbs").css("left", bcLeft);
+    },
+
     initRootNote: function() {
         const uuid = SidenoteSetup.rootUuid;
         const noteName = Sidenote.state.uuidToNoteName[uuid];
@@ -92,6 +104,7 @@ var Sidenote = {
         Sidenote.setContents(note);
         Sidenote.hideToolbar(note.divId);
         Sidenote.slide(note);
+        Sidenote.newBreadcrumb(columnPosition, noteName);
 
         return note;
     },
@@ -142,7 +155,7 @@ var Sidenote = {
             editor.enable();
         }
 
-        Sidenote.positionToolbar(divId);
+        Sidenote.positionToolbars();
     },
 
     initToolbarHeight: function() {
@@ -214,12 +227,11 @@ var Sidenote = {
         $("#" + divId).css("z-index", "1");
     },
 
-    positionToolbar: function(divId) {
+    positionToolbars: function() {
         const top = $("#title").outerHeight(true) +
                   $("#breadcrumbs").outerHeight(true);
-        const toolbar = "#" + divId + " .ql-toolbar";
-        $(toolbar).css("top", top);
-        $(toolbar).css("left", 0);
+        $(".ql-toolbar").css("top", top);
+        $(".ql-toolbar").css("left", 0);
     },
 
     setContents: function(note) {
@@ -376,12 +388,50 @@ var Sidenote = {
         return deltas;
     },
 
+    newBreadcrumb: function(columnPosition, noteName) {
+        const crumbSpanId = "crumb-" + columnPosition;
+
+        if ($("#" + crumbSpanId).length > 0) {
+            $("#" + crumbSpanId).text(noteName);
+            return;
+        }
+
+        Sidenote.positionToolbars();
+        Sidenote.positionContainer();
+
+        const containerWidth = parseFloat($("#note-container").css("width"));
+        const crumbWidth = Sidenote.state.noteWidth;
+        const numColumns = Sidenote.getNumColumns();
+        const width = Math.max(containerWidth, numColumns * crumbWidth);
+        $("#breadcrumbs").css("width", width);
+
+
+        $("#breadcrumbs").append('<span id="' + crumbSpanId + '" class="crumb">' + noteName + '</span>');
+
+        const left = Sidenote.getColumnLeftPosition(columnPosition);
+        $("#" + crumbSpanId).css("left", left);
+        $("#" + crumbSpanId).css("width", crumbWidth);
+
+        const height = $("#" + crumbSpanId).outerHeight(true);
+        $("#breadcrumbs").css("height", height);
+    },
+
+    getNumColumns: function() {
+        var maxColumn = 0;
+        for (var i = 0; i < Sidenote.state.notes.length; i++) {
+            const note = Sidenote.state.notes[i];
+            maxColumn = Math.max(maxColumn, note.columnPosition);
+        }
+        return maxColumn + 1;
+    },
+
     clearNotes: function(columnPosition) {
         for (var i = 0; i < Sidenote.state.notes.length; i++) {
             const note = Sidenote.state.notes[i];
             if (note.columnPosition >= columnPosition) {
                 Sidenote.state.notes[i] = undefined;
                 $("#" + note.divId).remove();
+                $("#crumb-" + note.columnPosition).remove();
                 delete Sidenote.state.editors[note.divId];
             }
         }
@@ -397,7 +447,6 @@ var Sidenote = {
         }
 
         Sidenote.state.outlines = Sidenote.state.outlines.filter(function(a){return a});
-
     },
 
     openNote: function(uuidLink) {
@@ -478,6 +527,8 @@ var Sidenote = {
             $("#" + newNote.divId).css("top", top);
         }
 
+
+
     },
 
     // If the passage is the last passage in a paragraph, return the y-value
@@ -513,6 +564,7 @@ var Sidenote = {
 
     onScroll: function() {
         Sidenote.state.currentScrollTop = $("#note-container").scrollTop();
+        Sidenote.positionBreadcrumbs();
 
         while (Sidenote.addNewSegment()) {}
     },

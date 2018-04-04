@@ -49,6 +49,12 @@ body {
     width: 100%;
 }
 
+.crumb {
+    position: absolute;
+    padding-left:0px;
+    top: 0px;
+}
+
 #note-container {
     position: fixed;
     height: 100%;
