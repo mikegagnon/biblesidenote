@@ -4704,12 +4704,16 @@ var Link = function (_Inline) {
         return link;
       } else {
 
-        var passage = Sidenote.getPassageFromNoteNameLink(link);
-
-        if (!passage) {
+        if (!Sidenote.validLink(link)) {
           // TODO: modal?
           alert("Invalid link");
           return this.SANITIZED_URL;
+        }
+
+        var passage = Sidenote.getPassageFromNoteNameLink(link);
+
+        if (!passage) {
+          passage = Sidenote.getPassageForNoteName(link);
         }
 
         var uuidLink = Sidenote.getUuidLink(passage);

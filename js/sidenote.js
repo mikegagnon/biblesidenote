@@ -11,6 +11,7 @@ var Sidenote = {
         toolbarHeight: undefined,
         animationDuration: 400,
         triggerPrependTop: 400,
+        maxLinkLength: 140,
     },
 
     state: {
@@ -352,8 +353,8 @@ var Sidenote = {
         Sidenote.repositionNotes(1);
     },
 
-    validLink: function() {
-        return true;
+    validLink: function(link) {
+        return link.length <= Sidenote.constant.maxLinkLength;
     },
 
     createAndOpenNote: function(uuid, noteName) {
@@ -438,6 +439,12 @@ var Sidenote = {
 
     renameNoteModalSave: function(uuid) {
         const newNoteName = $("#renameNoteModal .modal-body input").val();
+
+        if (Sidenote.getPassageFromNoteNameLink(newNoteName) || !Sidenote.validLink(newNoteName)) {
+            alert("Invalid note name");
+            return;
+        }
+
         const oldNoteName = Sidenote.state.uuidToNoteName[uuid];
 
         Sidenote.state.uuidToNoteName[uuid] = newNoteName;
@@ -910,15 +917,31 @@ var Sidenote = {
     getPassageFromNoteNameLink: function(noteNamelink) {
         const parts = noteNamelink.split(":")
         if (parts.length == 1) {
-            const noteName = parts[0];
-            return Sidenote.getPassageForNoteName(noteName);
+            const segmentName = parts[0];
+            if (Sidenote.state.segmentNames.has(segmentName)) {
+                const uuid = Sidenote.state.noteNameToUuid[segmentName];
+                return {
+                    uuid: uuid,
+                    begin: undefined,
+                    end: undefined,
+                }
+            } else {
+                return null;
+            }
         } else if (parts.length == 2) {
             const segmentName = parts[0];
             if (!Sidenote.state.segmentNames.has(segmentName)) {
                 return null;
             }
             const uuid = Sidenote.state.noteNameToUuid[segmentName];
+
+            if (!uuid) {
+                throw "Error";
+            }
+
             const beginEnd = parts[1].split("-");
+            // TODO: validate begin & end are within range for the segment
+            // and begin <= end
             if (beginEnd.length == 1) {
                 const begin = parseInt(beginEnd[0]);
                 if (isNaN(begin)) {
