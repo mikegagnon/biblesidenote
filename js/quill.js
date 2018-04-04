@@ -4712,7 +4712,7 @@ var Link = function (_Inline) {
           return this.SANITIZED_URL;
         }
 
-        const uuidLink = Sidenote.getUuidLink(passage);
+        var uuidLink = Sidenote.getUuidLink(passage);
 
         if (Sidenote.state.uuidToNoteName[passage.uuid]) {
           Sidenote.openNote(uuidLink);
