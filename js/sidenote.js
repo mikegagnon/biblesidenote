@@ -1,3 +1,5 @@
+// Public domain. Michael Gagnon, 2018.
+
 // TODO: image modal in quill
 
 var Sidenote = {
