@@ -46,6 +46,7 @@ var Sidenote = {
         Sidenote.state.uuidToNoteName = SidenoteSetup.uuidToNoteName;
         Sidenote.state.noteNameToUuid = SidenoteSetup.noteNameToUuid;
         Sidenote.state.segmentIndex = SidenoteSetup.segmentIndex;
+        Sidenote.state.currentScrollTop = $("#note-container").scrollTop();
         Sidenote.initSegmentNames();
     },
 
@@ -85,6 +86,7 @@ var Sidenote = {
         const note = Sidenote.pushEtc(uuid, columnPosition);
         Sidenote.state.selectedNoteDivId = note.divId;
         Sidenote.noteFocusIn(note.divId);
+        Sidenote.newBreadcrumb(columnPosition, noteName);
     },
 
     pushEtc: function(uuid, columnPosition) {
@@ -104,7 +106,6 @@ var Sidenote = {
         Sidenote.setContents(note);
         Sidenote.hideToolbar(note.divId);
         Sidenote.slide(note);
-        Sidenote.newBreadcrumb(columnPosition, noteName);
 
         return note;
     },
@@ -393,27 +394,77 @@ var Sidenote = {
 
         if ($("#" + crumbSpanId).length > 0) {
             $("#" + crumbSpanId).text(noteName);
-            return;
+        } else {
+            Sidenote.positionToolbars();
+            Sidenote.positionContainer();
+
+            const containerWidth = parseFloat($("#note-container").css("width"));
+            const crumbWidth = Sidenote.state.noteWidth;
+            const numColumns = Sidenote.getNumColumns();
+            const width = Math.max(containerWidth, numColumns * crumbWidth);
+            $("#breadcrumbs").css("width", width);
+
+
+            $("#breadcrumbs").append('<span id="' + crumbSpanId + '" class="crumb">' + noteName + '</span>');
+
+            const left = Sidenote.getColumnLeftPosition(columnPosition);
+            $("#" + crumbSpanId).css("left", left);
+            $("#" + crumbSpanId).css("width", crumbWidth);
+
+            const height = $("#" + crumbSpanId).outerHeight(true);
+            $("#breadcrumbs").css("height", height);
         }
 
-        Sidenote.positionToolbars();
-        Sidenote.positionContainer();
+        Sidenote.updateBreadcrumbs();
+    },
 
-        const containerWidth = parseFloat($("#note-container").css("width"));
-        const crumbWidth = Sidenote.state.noteWidth;
-        const numColumns = Sidenote.getNumColumns();
-        const width = Math.max(containerWidth, numColumns * crumbWidth);
-        $("#breadcrumbs").css("width", width);
+    updateBreadcrumbs: function() {
 
+        // Find the segments that are at the very top of the sidenote-container
+        // view. Then update segnment name to reflect
 
-        $("#breadcrumbs").append('<span id="' + crumbSpanId + '" class="crumb">' + noteName + '</span>');
+        const segmentNotesByColumnPosition = Sidenote.getSegmentNotesByColumnPosition();
+        // scrollModifier is used to ensure that we have scroll up just a little
+        // bit more, to see the previous segment's name
+        const scrollModifier = 100;
+        for (var cp in segmentNotesByColumnPosition) {
+            const notes = segmentNotesByColumnPosition[cp];
+            var bottoms = {};
+            for (var i = 0; i < notes.length; i++) {
+                const note = notes[i];
+                const top = parseFloat($("#" + note.divId).css("top"));
+                const height = $("#" + note.divId).outerHeight();
+                const bottom = top + height - scrollModifier;
+                if (bottom >= Sidenote.state.currentScrollTop) {
+                    bottoms[i] = bottom;
+                }
+            }
 
-        const left = Sidenote.getColumnLeftPosition(columnPosition);
-        $("#" + crumbSpanId).css("left", left);
-        $("#" + crumbSpanId).css("width", crumbWidth);
+            const numBottoms = Object.keys(bottoms).length
+            if (numBottoms === 0) {
+                throw "Error";
+            } else {
+                var minI = undefined
+                var minBottom = undefined;
+                for (i in bottoms) {
+                    if (typeof minI === "undefined") {
+                        minI = i;
+                        minBottom = bottoms[i]
+                    } else {
+                        if (bottoms[i] <= minBottom) {
+                            minI = i;
+                            minBottom = bottoms[i];
+                        }
+                    }
+                }
 
-        const height = $("#" + crumbSpanId).outerHeight(true);
-        $("#breadcrumbs").css("height", height);
+                const segmentUuid = notes[minI].uuid;
+                const segmentName = Sidenote.state.uuidToNoteName[segmentUuid];
+
+                $("#crumb-" + cp).text(segmentName);
+            }
+
+        }
     },
 
     getNumColumns: function() {
@@ -481,7 +532,6 @@ var Sidenote = {
                 };
             }
 
-
             var fromTop;
             if (Sidenote.state.segmentNames.has(fromNoteName)) {
                 fromTop = Sidenote.state.currentScrollTop + Sidenote.topModifier();
@@ -527,8 +577,8 @@ var Sidenote = {
             $("#" + newNote.divId).css("top", top);
         }
 
-
-
+        const noteName = Sidenote.state.uuidToNoteName[newNote.uuid];
+        Sidenote.newBreadcrumb(columnPosition, noteName);
     },
 
     // If the passage is the last passage in a paragraph, return the y-value
@@ -565,8 +615,8 @@ var Sidenote = {
     onScroll: function() {
         Sidenote.state.currentScrollTop = $("#note-container").scrollTop();
         Sidenote.positionBreadcrumbs();
-
         while (Sidenote.addNewSegment()) {}
+        Sidenote.updateBreadcrumbs();
     },
 
     addNewSegment: function() {
