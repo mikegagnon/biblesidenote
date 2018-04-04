@@ -537,14 +537,16 @@ var Sidenote = {
 
         const currentScrollBottom = Sidenote.state.currentScrollTop + $("#note-container").outerHeight();
 
-        const prev = Sidenote.state.segmentIndex[aboveBorderNoteName].prev;
-        const next = Sidenote.state.segmentIndex[belowBorderNoteName].next;
+        const above = Sidenote.state.segmentIndex[aboveBorderNoteName];
+        const below = Sidenote.state.segmentIndex[belowBorderNoteName];
 
         var addedSegment = false;
 
-        if (Sidenote.state.currentScrollTop <= aboveBorderTop && !(typeof prev === "undefined")) {
+        if (Sidenote.state.currentScrollTop <= aboveBorderTop
+            && typeof above !== "undefined"
+            && typeof above.prev !== "undefined") {
 
-            const newNoteName = Sidenote.state.segmentIndex[aboveBorderNoteName].prev;
+            const newNoteName = above.prev;
             const newNoteUuid = Sidenote.state.noteNameToUuid[newNoteName];
 
             Sidenote.prependSegment(newNoteUuid, aboveBorderNote);
@@ -552,9 +554,11 @@ var Sidenote = {
             addedSegment = true;
         }
 
-        if (currentScrollBottom >= belowBorderBottom && !(typeof next === "undefined")) {
+        if (currentScrollBottom >= belowBorderBottom
+            && typeof below !== "undefined"
+            && typeof below.next !== "undefined") {
 
-            const newNoteName = Sidenote.state.segmentIndex[belowBorderNoteName].next;
+            const newNoteName = below.next;
             const newNoteUuid = Sidenote.state.noteNameToUuid[newNoteName];
 
             Sidenote.appendSegment(newNoteUuid, belowBorderNote);
