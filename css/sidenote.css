@@ -49,6 +49,13 @@ body {
     width: 100%;
 }
 
+#breadcrumbs a {
+    color: black;
+}
+.modal {
+    font-family: "Helvetica", sans-serif;
+}
+
 .crumb {
     position: absolute;
     padding-left:0px;

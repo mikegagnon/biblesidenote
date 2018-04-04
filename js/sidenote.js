@@ -426,7 +426,34 @@ var Sidenote = {
     },
 
     renameNoteModal: function(uuid) {
-        console.log(uuid);
+        $("#renameNoteModal .modal-header").html("<h2>Rename note</h2>");
+
+        const noteName = Sidenote.state.uuidToNoteName[uuid];
+        $("#renameNoteModal .modal-body").html('<input class="form-control" type="text" value="' + noteName + '">');
+        
+        $("#renameNoteModalSave").attr("onclick", "Sidenote.renameNoteModalSave('" + uuid + "')");
+
+        $("#renameNoteModal").modal();
+    },
+
+    renameNoteModalSave: function(uuid) {
+        const newNoteName = $("#renameNoteModal .modal-body input").val();
+        const oldNoteName = Sidenote.state.uuidToNoteName[uuid];
+
+        Sidenote.state.uuidToNoteName[uuid] = newNoteName;
+        delete Sidenote.state.noteNameToUuid[oldNoteName];
+        Sidenote.state.noteNameToUuid[newNoteName] = uuid;
+
+        var note;
+        for (var i = 0; i < Sidenote.state.notes.length; i++) {
+            const n = Sidenote.state.notes[i];
+            if (n.uuid == uuid) {
+                note = n;
+            }
+        }
+        Sidenote.newBreadcrumb(note, note.columnPosition, newNoteName);
+
+        $("#renameNoteModal").modal("hide");
     },
 
     updateBreadcrumbs: function() {
