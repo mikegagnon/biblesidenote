@@ -15,6 +15,10 @@ body {
     font-size: 15px;
 }
 
+.ql-container {
+    padding-bottom: 20px;
+}
+
 .note .ql-toolbar {
     position: fixed;
     border-left: 0px;

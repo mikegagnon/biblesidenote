@@ -412,15 +412,24 @@ var Sidenote = {
             }
 
             const lineHeight = parseFloat($("#" + newNote.divId).css("line-height"))
-
             const passagePosition = $("#" + newNote.divId + " .ql-editor p strong:eq(" +  (passage.begin - 1) + ")").position()
-
             var passagePositionEnd = $("#" + newNote.divId + " .ql-editor p strong:eq(" +  (passage.end) + ")").position()
+            const paraBottom = Sidenote.findParaEnd(newNote, passage);
+
             if (!passagePositionEnd) {
+                const padding = parseFloat($(".ql-container").css("padding-bottom"));
                 passagePositionEnd = {
-                    top: parseFloat($("#" + newNote.divId).outerHeight(true)) - lineHeight
+                    top: parseFloat($("#" + newNote.divId).outerHeight()) - padding - lineHeight
                 };
             }
+            // This happens when the passage ends at the end of its enclosing
+            // paragraph
+            else if (typeof paraBottom !== "undefined") {
+                passagePositionEnd = {
+                    top: paraBottom - lineHeight
+                };
+            }
+
 
             var fromTop;
             if (Sidenote.state.segmentNames.has(fromNoteName)) {
@@ -467,6 +476,28 @@ var Sidenote = {
             $("#" + newNote.divId).css("top", top);
         }
 
+    },
+
+    // If the passage is the last passage in a paragraph, return the y-value
+    // for the bottom of the paragraph.
+    findParaEnd: function(newNote, passage) {
+
+        // find the enclosing paragraph
+        const numParagraphs = $("#" + newNote.divId + " .ql-editor p").length;
+        for (var i = 0; i < numParagraphs; i++) {
+            const numStrongs = $("#" + newNote.divId + " .ql-editor p:eq(" + i + ") strong").length;
+            for (var j = 0; j < numStrongs;j++) {
+                const text = $("#" + newNote.divId  + " .ql-editor p:eq(" + i +") strong:eq(" + j + ")").text();
+                if (parseInt(text) === passage.end) {
+                    // We are at the end of the paragraph
+                    if (j === numStrongs - 1) {
+                        const para = $("#" + newNote.divId + " .ql-editor p:eq(" + i + ")");
+                        const bottom = para.position().top + para.outerHeight(true);
+                        return bottom;
+                    }
+                }
+            }
+        }
     },
 
     topModifier: function() {
