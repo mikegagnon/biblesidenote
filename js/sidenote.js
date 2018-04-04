@@ -86,7 +86,7 @@ var Sidenote = {
         const note = Sidenote.pushEtc(uuid, columnPosition);
         Sidenote.state.selectedNoteDivId = note.divId;
         Sidenote.noteFocusIn(note.divId);
-        Sidenote.newBreadcrumb(columnPosition, noteName);
+        Sidenote.newBreadcrumb(note, columnPosition, noteName);
     },
 
     pushEtc: function(uuid, columnPosition) {
@@ -389,11 +389,12 @@ var Sidenote = {
         return deltas;
     },
 
-    newBreadcrumb: function(columnPosition, noteName) {
+    newBreadcrumb: function(note, columnPosition, noteName) {
         const crumbSpanId = "crumb-" + columnPosition;
 
+        // TODOO: link to modal for this crumb
         if ($("#" + crumbSpanId).length > 0) {
-            $("#" + crumbSpanId).text(noteName);
+            $("#" + crumbSpanId + " a").text(noteName);
         } else {
             Sidenote.positionToolbars();
             Sidenote.positionContainer();
@@ -404,8 +405,14 @@ var Sidenote = {
             const width = Math.max(containerWidth, numColumns * crumbWidth);
             $("#breadcrumbs").css("width", width);
 
-
-            $("#breadcrumbs").append('<span id="' + crumbSpanId + '" class="crumb">' + noteName + '</span>');
+            const uuid = Sidenote.state.noteNameToUuid[noteName];
+            var link;
+            if (note.segment) {
+                link = noteName;
+            } else {
+                link = "<a href='javascript:Sidenote.renameNoteModal(\"" + uuid + "\")'>" + noteName + "</a>";
+            }
+            $("#breadcrumbs").append('<span id="' + crumbSpanId + '" class="crumb">' + link + '</span>');
 
             const left = Sidenote.getColumnLeftPosition(columnPosition);
             $("#" + crumbSpanId).css("left", left);
@@ -416,6 +423,10 @@ var Sidenote = {
         }
 
         Sidenote.updateBreadcrumbs();
+    },
+
+    renameNoteModal: function(uuid) {
+        console.log(uuid);
     },
 
     updateBreadcrumbs: function() {
@@ -578,7 +589,7 @@ var Sidenote = {
         }
 
         const noteName = Sidenote.state.uuidToNoteName[newNote.uuid];
-        Sidenote.newBreadcrumb(columnPosition, noteName);
+        Sidenote.newBreadcrumb(newNote, columnPosition, noteName);
     },
 
     // If the passage is the last passage in a paragraph, return the y-value
