@@ -292,11 +292,13 @@ var Sidenote = {
             Sidenote.disableEditors();
             Sidenote.moveNotesUpByToolbarHeight();
             Sidenote.hideAllToolbars();
+            Sidenote.removeBreadcrumbLinks();
             $("#modeButton").text("Edit mode");
         } else {
             Sidenote.enableEditors();
             Sidenote.moveNotesDownByToolbarHeight();
             Sidenote.showAllToolbars();
+            Sidenote.addBreadcrumbLinks();
             $("#modeButton").text("Presentation mode");
         }
 
@@ -327,6 +329,16 @@ var Sidenote = {
 
     showAllToolbars: function() {
         $(".ql-toolbar").removeClass("hidden");
+    },
+
+    removeBreadcrumbLinks: function() {
+        $("#breadcrumbs .crumbNoLink").removeClass("hidden");
+        $("#breadcrumbs .crumbLink").addClass("hidden");
+    },
+
+    addBreadcrumbLinks: function() {
+        $("#breadcrumbs .crumbNoLink").addClass("hidden");
+        $("#breadcrumbs .crumbLink").removeClass("hidden");
     },
 
     repositionNotes: function(sign) {
@@ -411,9 +423,17 @@ var Sidenote = {
             if (note.segment) {
                 link = noteName;
             } else {
-                link = "<a href='javascript:Sidenote.renameNoteModal(\"" + uuid + "\")'>" + noteName + "</a>";
+                link = "<a class='crumbLink' href='javascript:Sidenote.renameNoteModal(\"" + uuid + "\")'>" + noteName + "</a>";
+                link += "<span class='crumbNoLink'>" + noteName + "</span>";
             }
+
             $("#breadcrumbs").append('<span id="' + crumbSpanId + '" class="crumb">' + link + '</span>');
+
+            if (Sidenote.state.mode == "edit") {
+                $("#" + crumbSpanId + " .crumbNoLink").addClass("hidden");
+            } else {
+                $("#" + crumbSpanId + " .crumbLink").addClass("hidden");
+            }
 
             const left = Sidenote.getColumnLeftPosition(columnPosition);
             $("#" + crumbSpanId).css("left", left);
