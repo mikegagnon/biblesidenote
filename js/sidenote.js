@@ -1056,7 +1056,7 @@ var Sidenote = {
 
         oldi = 0;
         newi = 0;
-        commentary = undefined;
+        links = [];
 
         // Make sure title and first new line are in order
         const headerLength = 2;
@@ -1066,83 +1066,103 @@ var Sidenote = {
             }
         }
 
-        newi = allowCommentaryLink(newi);
-        if (newi < 0) {
-            return false;
+        result = getVerseCommentaryLink(newi);
+        newi = result.newi;
+
+        if (result.link) {
+            links.push({above: 1, link: result.link});
         }
 
         while (true) {
             break;
         }
 
-        return true;
+        return links;
 
-        function allowCommentaryLink(newi) {
+        function getVerseCommentaryLink(newi) {
+
+            const origNewi = newi;
+
             // If there is a newline...
             if (Sidenote.objEquals(newOps[newi], {"insert":"\n"})) {
                 newi++;
                 // ...there must be  a link...
-                if (validLink(newOps[newi])) {
+                const link = getVerseCommentaryLinkFromOp(newOps[newi])
+                if (link) {
                     newi++;
                     // ...followed by a newline
                     if (Sidenote.objEquals(newOps[newi], {"insert":"\n"})) {
                         newi++;
+                        return {
+                            newi: newi,
+                            link: link,
+                        }
                     } else {
-                        return -1;
+                        return {newi: origNewi};
                     }
                 } else {
-                    return -1;
+                    return {newi: origNewi};
+                }
+            } else {
+                return {newi: origNewi};
+            }
+        }
+
+        function getVerseCommentaryLinkFromOp(op) {
+            const keys = Object.getOwnPropertyNames(op);
+            if (keys.length != 2 ||
+                !("attributes" in op) ||
+                !("insert" in op)) {
+                return undefined;
+            } else {
+                const text = getVerseCommentaryLinkText(op.insert);
+                const uuid = getVerseCommentaryLinkUuid(op.attributes);
+
+                if (!text || !uuid) {
+                    return undefined;
+                } else {
+                    return {
+                        text: text,
+                        uuid: uuid,
+                    }
                 }
             }
-
-            return newi;
         }
 
-        function validInsert(insert) {
+        function getVerseCommentaryLinkText(insert) {
             // TODO: search for new lines and other bad chars?
-            // Ensure it's of the form: Commentary on v. 1-2?
-            return insert.length <= MAX_LINK_LEN;
+            if (insert.length <= MAX_LINK_LEN) {
+                return insert;
+            } else {
+                return undefined;
+            }
         }
 
-        function validAttributes(attributes) {
+        function getVerseCommentaryLinkUuid(attributes) {
             const keys = Object.getOwnPropertyNames(attributes);
             if (keys.length != 1 ||
                 !("link" in attributes)) {
-                return false;
+                return undefined;
             }
 
             const link = attributes.link;
 
             if (!link.startsWith("javascript:Sidenote.openNote('"))
             {
-                return false;
+                return undefined;
             }
 
             const parts = link.split("'");
             if (parts.length != 3 || parts[2] != ")") {
-                return false;
+                return undefined;
             }
 
             const uuid = parts[1];
             if (!(uuid in Sidenote.state.contents)) {
-                return false;
+                return undefined;
             }
 
-            return true;
-        }
-
-        function validLink(op) {
-            const keys = Object.getOwnPropertyNames(op);
-            if (keys.length != 2 ||
-                !("attributes" in op) ||
-                !("insert" in op)) {
-                return false;
-            } else if (!validInsert(op.insert) ||
-                !validAttributes(op.attributes)) {
-                return false;
-            } else {
-                return true;
-            }
+            return uuid;
         }
     },
 
