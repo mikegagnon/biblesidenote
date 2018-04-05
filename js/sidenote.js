@@ -1,7 +1,7 @@
 // Public domain. Michael Gagnon, 2018.
 
 // TODO: image modal in quill
-
+// TODO: shifts below notes vertically when segments are edited
 var Sidenote = {
 
     constant: {
@@ -1036,9 +1036,149 @@ var Sidenote = {
         } else {
             return passage.uuid;
         }
+    },
+
+    updatedNoteValid: function(noteName) {
+        const MAX_LINK_LEN = 5;
+
+        Sidenote.saveSelectedNote();
+        const uuid = Sidenote.state.noteNameToUuid[noteName];
+        const newDeltas = Sidenote.state.contents[uuid];
+        // Really this should be the orig orig---the original unalterated segment
+        // before *any* edits
+        const oldDeltas = Sidenote.constant.orig.contents[uuid];
+        if (!newDeltas || !oldDeltas) {
+            return;
+        }
+
+        const newOps = newDeltas.ops;
+        const oldOps = oldDeltas.ops;
+
+        oldi = 0;
+        newi = 0;
+        commentary = undefined;
+
+        // Make sure title and first new line are in order
+        const headerLength = 2;
+        for (; oldi < headerLength; oldi++, newi++) {
+            if (!Sidenote.objEquals(newOps[newi], oldOps[oldi])) {
+                return false;
+            }
+        }
+
+        newi = allowCommentaryLink(newi);
+        if (newi < 0) {
+            return false;
+        }
+
+        while (true) {
+            break;
+        }
+
+        return true;
+
+        function allowCommentaryLink(newi) {
+            // If there is a newline...
+            if (Sidenote.objEquals(newOps[newi], {"insert":"\n"})) {
+                newi++;
+                // ...there must be  a link...
+                if (validLink(newOps[newi])) {
+                    newi++;
+                    // ...followed by a newline
+                    if (Sidenote.objEquals(newOps[newi], {"insert":"\n"})) {
+                        newi++;
+                    } else {
+                        return -1;
+                    }
+                } else {
+                    return -1;
+                }
+            }
+
+            return newi;
+        }
+
+        function validInsert(insert) {
+            // TODO: search for new lines and other bad chars?
+            // Ensure it's of the form: Commentary on v. 1-2?
+            return insert.length <= MAX_LINK_LEN;
+        }
+
+        function validAttributes(attributes) {
+            const keys = Object.getOwnPropertyNames(attributes);
+            if (keys.length != 1 ||
+                !("link" in attributes)) {
+                return false;
+            }
+
+            const link = attributes.link;
+
+            if (!link.startsWith("javascript:Sidenote.openNote('"))
+            {
+                return false;
+            }
+
+            const parts = link.split("'");
+            if (parts.length != 3 || parts[2] != ")") {
+                return false;
+            }
+
+            const uuid = parts[1];
+            if (!(uuid in Sidenote.state.contents)) {
+                return false;
+            }
+
+            return true;
+        }
+
+        function validLink(op) {
+            const keys = Object.getOwnPropertyNames(op);
+            if (keys.length != 2 ||
+                !("attributes" in op) ||
+                !("insert" in op)) {
+                return false;
+            } else if (!validInsert(op.insert) ||
+                !validAttributes(op.attributes)) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+    },
+
+    objEquals: function(obj1, obj2) {
+        const keys1 = Object.getOwnPropertyNames(obj1);
+        const keys2 = Object.getOwnPropertyNames(obj2);
+
+        if (keys1.length != keys2.length) {
+            return false;
+        }
+
+        for (var i = 0; i < keys1.length; i++) {
+            const key = keys1[i];
+
+            if (!(key in obj2)) {
+                return false;
+            }
+
+            const v1 = obj1[key];
+            const v2 = obj2[key];
+
+            if (typeof v1 !== typeof v2) {
+                return false;
+            }
+
+            if (typeof v1 === "object") {
+                if (!Sidenote.objEquals(v1, v2)) {
+                    return false;
+                }
+            } else if (v1 !== v2) {
+                return false;
+            }
+        }
+
+        return true;
     }
-
-
 }
 
 window.onload = function() {
