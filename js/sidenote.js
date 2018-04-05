@@ -1054,6 +1054,8 @@ var Sidenote = {
         const newOps = newDeltas.ops;
         const oldOps = oldDeltas.ops;
 
+        const numUnits = getNumUnits(oldOps);
+
         oldi = 0;
         newi = 0;
         links = [];
@@ -1066,7 +1068,7 @@ var Sidenote = {
             }
         }
 
-        result = getVerseCommentaryLink(newi);
+        const result = getVerseCommentaryLink(newi);
 
         if (result) {
             links.push({above: 1, link: result.link});
@@ -1083,11 +1085,113 @@ var Sidenote = {
             }
         }
 
-        while (true) {
-            break;
+        for (var unitNum = 1; unitNum <= numUnits; unitNum++) {
+            const result = parseUnit(unitNum, newi, oldi);
+            if (!result) {
+                return undefined;
+            } else {
+                links.concat(result.links);
+                newi = result.newi;
+                oldi = result.oldi;
+            }
         }
 
         return links;
+
+        function getNumUnits(ops) {
+            var numUnits = 0;
+
+            for (var i = 0; i < ops.length; i++) {
+                const op = ops[i];
+                if ("attributes" in op && "bold" in op.attributes) {
+                    numUnits++;
+                }
+            }
+
+            return numUnits;
+        }
+
+        function parseUnit(unitNum, newi, oldi) {
+            const newIdentifier = newOps[newi];
+            const oldIdentifier = oldOps[oldi];
+
+            if (!validOldIdentifier(unitNum, oldIdentifier)) {
+                throw "Error";
+            }
+
+            if (!validNewIdentifier(unitNum, newIdentifier)) {
+                return undefined;
+            }
+
+            newi++;
+            oldi++;
+
+            const newText = newOps[newi];
+            const oldText = oldOps[oldi];
+
+            if (!validUnitText(newText, oldText)) {
+                return undefined;
+            }
+
+            newi++;
+            oldi++;
+
+            return {
+                newi: newi,
+                oldi: oldi,
+                links: [],
+            };
+        }
+
+        function validOldIdentifier(unitNunm, op) {
+            const keys = Object.getOwnPropertyNames(op);
+            if (keys.length != 2 ||
+                !("attributes" in op) ||
+                !("insert" in op)) {
+                return false;
+            } else {
+                const keys = Object.getOwnPropertyNames(op.attributes);
+                if (keys.length != 1 ||
+                    !("bold" in op.attributes ) ||
+                    op.attributes.bold !== true) {
+                    return false;
+                }
+                return op.insert === unitNum + String.fromCharCode(160);
+            }
+        }
+
+        function validNewIdentifier(unitNum, op) {
+            if (validOldIdentifier(unitNum, op)) {
+                return true;
+            }
+
+            console.log(unitNum, op);
+            return false;
+        }
+
+        function extractUnitText(op) {
+            const keys = Object.getOwnPropertyNames(op);
+            if (keys.length != 1 ||
+                !("insert" in op)) {
+                return undefined;
+            }
+
+            return op.insert;
+        }
+
+        function validUnitText(newOp, oldOp) {
+            const newText = extractUnitText(newOp);
+            const oldText = extractUnitText(oldOp);
+
+            if (typeof oldText === "undefined") {
+                throw "Error";
+            } else if (typeof newText === "undefined" || newText !== oldText) {
+                return false;
+            } else {
+                return true;
+            }
+
+        }
 
         function getVerseCommentaryLink(newi, newLines, skipFirstNewLine) {
             if (typeof newLines === "undefined") {
