@@ -96,6 +96,15 @@ body {
     margin-right: 20px;
 }
 
+.ql-snow .ql-editor a {
+    color: #2a70e0;
+    text-decoration: none;
+}
+
+.ql-snow .ql-editor a:hover {
+    text-decoration: underline;
+}
+
 .ql-tooltip {
     z-index: 3; /* Place above toolbars and notes */
 }
