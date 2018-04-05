@@ -20,9 +20,9 @@ var Sidenote = {
         contents: undefined,
         uuidToNoteName: undefined,
         noteNameToUuid: undefined,
-        numVisibleColumns: SidenoteSetup.numVisibleColumns,
+        numVisibleColumns: undefined,
         noteWidth: undefined,
-        mode: SidenoteSetup.mode,
+        mode: undefined,
         selectedNoteDivId: undefined,
         segmentNames: new Set(),
         outlines: [],
@@ -42,10 +42,12 @@ var Sidenote = {
     },
 
     initState: function() {
-        Sidenote.state.noteWidth = Sidenote.noteWidth();
         Sidenote.state.contents = SidenoteSetup.contents;
         Sidenote.state.uuidToNoteName = SidenoteSetup.uuidToNoteName;
         Sidenote.state.noteNameToUuid = SidenoteSetup.noteNameToUuid;
+        Sidenote.state.numVisibleColumns = SidenoteSetup.numVisibleColumns;
+        Sidenote.state.noteWidth = Sidenote.noteWidth();
+        Sidenote.state.mode = SidenoteSetup.mode;
         Sidenote.state.segmentIndex = SidenoteSetup.segmentIndex;
         Sidenote.state.currentScrollTop = $("#note-container").scrollTop();
         Sidenote.initSegmentNames();
