@@ -12,6 +12,11 @@ var Sidenote = {
         animationDuration: 400,
         triggerPrependTop: 400,
         maxLinkLength: 140,
+        orig: {
+            contents: undefined,
+            uuidToNoteName: undefined,
+            noteNameToUuid: undefined,
+        },
     },
 
     state: {
@@ -29,6 +34,7 @@ var Sidenote = {
     },
 
     init: function() {
+        Sidenote.initConstant();
         Sidenote.initState();
         Sidenote.initTitle();
         Sidenote.positionMenu();
@@ -41,6 +47,12 @@ var Sidenote = {
         $(window).resize(Sidenote.resizeWindow);
     },
 
+    initConstant: function() {
+        Sidenote.constant.orig.contents = Sidenote.deepCopy(SidenoteSetup.contents);
+        Sidenote.constant.orig.uuidToNoteName = Sidenote.deepCopy(SidenoteSetup.uuidToNoteName);
+        Sidenote.constant.orig.noteNameToUuid = Sidenote.deepCopy(SidenoteSetup.noteNameToUuid);
+    },
+
     initState: function() {
         Sidenote.state.contents = SidenoteSetup.contents;
         Sidenote.state.uuidToNoteName = SidenoteSetup.uuidToNoteName;
@@ -51,6 +63,10 @@ var Sidenote = {
         Sidenote.state.segmentIndex = SidenoteSetup.segmentIndex;
         Sidenote.state.currentScrollTop = $("#note-container").scrollTop();
         Sidenote.initSegmentNames();
+    },
+
+    deepCopy: function(contents) {
+        return JSON.parse(JSON.stringify(contents));
     },
 
     noteWidth: function() {
