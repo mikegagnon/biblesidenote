@@ -1067,10 +1067,20 @@ var Sidenote = {
         }
 
         result = getVerseCommentaryLink(newi);
-        newi = result.newi;
 
-        if (result.link) {
+        if (result) {
             links.push({above: 1, link: result.link});
+            newi = result.newi;
+        } else {
+            result1 = getVerseCommentaryLink(newi, "\n\n");
+            if (result1) {
+                result2 = getVerseCommentaryLink(result1.newi, "\n", true);
+                if (result2) {
+                    links.push({above: 1, link: result1.link});
+                    links.push({above: 1, link: result2.link});
+                    newi = result2.newi;
+                }
+            }
         }
 
         while (true) {
@@ -1079,32 +1089,37 @@ var Sidenote = {
 
         return links;
 
-        function getVerseCommentaryLink(newi) {
-
-            const origNewi = newi;
+        function getVerseCommentaryLink(newi, newLines, skipFirstNewLine) {
+            if (typeof newLines === "undefined") {
+                newLines = "\n";
+            }
 
             // If there is a newline...
-            if (Sidenote.objEquals(newOps[newi], {"insert":"\n"})) {
-                newi++;
+            if (skipFirstNewLine || Sidenote.objEquals(newOps[newi], {"insert":"\n"})) {
+
+                if (!skipFirstNewLine ) {
+                    newi++;
+                }
+
                 // ...there must be  a link...
                 const link = getVerseCommentaryLinkFromOp(newOps[newi])
                 if (link) {
                     newi++;
                     // ...followed by a newline
-                    if (Sidenote.objEquals(newOps[newi], {"insert":"\n"})) {
+                    if (Sidenote.objEquals(newOps[newi], {"insert":newLines})) {
                         newi++;
                         return {
                             newi: newi,
                             link: link,
                         }
                     } else {
-                        return {newi: origNewi};
+                        return undefined;
                     }
                 } else {
-                    return {newi: origNewi};
+                    return undefined;
                 }
             } else {
-                return {newi: origNewi};
+                return undefined;
             }
         }
 
