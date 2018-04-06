@@ -1038,18 +1038,26 @@ var Sidenote = {
         }
     },
 
-    getSegmentLinks: function(noteName) {
-        const helper = Sidenote.getSegmentLinksHelper;
+    getSegmentLinks: function(segmentName) {
+        if (!Sidenote.state.segmentNames.has(segmentName)) {
+            throw "Error";
+        }
 
         Sidenote.saveSelectedNote();
-        const uuid = Sidenote.state.noteNameToUuid[noteName];
+        const uuid = Sidenote.state.noteNameToUuid[segmentName];
         const newDeltas = Sidenote.state.contents[uuid];
+
         // Really this should be the orig orig---the original unalterated segment
         // before *any* edits
         const oldDeltas = Sidenote.constant.orig.contents[uuid];
         if (!newDeltas || !oldDeltas) {
             return;
         }
+
+        return Sidenote.getSegmentLinksDeltas(newDeltas, oldDeltas);
+    },
+
+    getSegmentLinksDeltas: function(newDeltas, oldDeltas) {
 
         const newOps = newDeltas.ops;
         const oldOps = oldDeltas.ops;
@@ -1070,6 +1078,7 @@ var Sidenote = {
 
         const above = 1;
 
+        const helper = Sidenote.getSegmentLinksHelper;
         const result = helper.getPassageLink(newOps, above, newi);
 
         if (result) {
@@ -1099,6 +1108,40 @@ var Sidenote = {
         }
 
         return links;
+    },
+
+    testGetSegmentLinks: {
+
+        oldDeltas: {
+            "ops":[
+                {"insert":"Matthew 18"},
+                {"attributes":{"header":1},
+                "insert":"\n"},
+                {"attributes":{"bold":true},"insert":"1 "},
+                {"insert":"At the same time came the disciples unto Jesus, saying, Who is the greatest in the kingdom of heaven? "},
+                {"attributes":{"bold":true},"insert":"2 "},{"insert":"And Jesus called a little child unto him, and set him in the midst of them, "},
+                {"attributes":{"bold":true},"insert":"3 "},{"insert":"And said, Verily I say unto you, Except ye be converted, and become as little children, ye shall not enter into the kingdom of heaven. "},
+            ]
+        },
+
+        test: function() {
+            Sidenote.testGetSegmentLinks.test1();
+        },
+
+        test1: function() {
+            const assert = Sidenote.testGetSegmentLinks.assert;
+            const oldDeltas = Sidenote.testGetSegmentLinks.oldDeltas;
+            const newDeltas = Sidenote.deepCopy(oldDeltas);
+            const result = Sidenote.getSegmentLinksDeltas(newDeltas, oldDeltas);
+            assert(result.length == 0);
+        },
+
+        assert: function(bool){
+            if (!bool) {
+                throw "Test failed";
+            }
+        }
+
     },
 
     getSegmentLinksHelper: {
@@ -1370,4 +1413,5 @@ var Sidenote = {
 
 window.onload = function() {
     Sidenote.init();
+    Sidenote.testGetSegmentLinks.test();
 }
