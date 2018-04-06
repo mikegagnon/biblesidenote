@@ -1133,6 +1133,7 @@ var Sidenote = {
         },
 
         test: function() {
+            Sidenote.testGetSegmentLinks.testComplete();
             Sidenote.testGetSegmentLinks.testUnitLink();
             Sidenote.testGetSegmentLinks.testFirstAndSecondPassageLink();
             Sidenote.testGetSegmentLinks.testFirstPassageLink();
@@ -1140,6 +1141,40 @@ var Sidenote = {
             Sidenote.testGetSegmentLinks.testNewDeltasEqualsOldDeltas();
             Sidenote.testGetSegmentLinks.testEmptyNewDeltas();
             Sidenote.testGetSegmentLinks.testBadHeader();
+        },
+
+        testComplete: function() {
+            const assert = Sidenote.testGetSegmentLinks.assert;
+            const oldDeltas = Sidenote.testGetSegmentLinks.oldDeltas;
+            var newDeltas = {
+                "ops": [
+                    oldDeltas.ops[0],
+                    oldDeltas.ops[1],
+                    {insert: "\n"},
+                    {"attributes":{"link":"javascript:Sidenote.openNote('link1')"},"insert":"foo1"},
+                    {insert: "\n\n"},
+                    {"attributes":{"link":"javascript:Sidenote.openNote('link2')"},"insert":"foo2"},
+                    {insert: "\n"},
+                    {"attributes":{"bold":true,"link":"javascript:Sidenote.openNote('uuid1')"}, "insert":"1 "},
+                    oldDeltas.ops[3],
+                    oldDeltas.ops[4],
+                    oldDeltas.ops[5],
+                    {"attributes":{"bold":true,"link":"javascript:Sidenote.openNote('uuid2')"}, "insert":"3 "},
+                    oldDeltas.ops[7],
+                ],
+            };
+
+            const result = Sidenote.getSegmentLinksDeltas(newDeltas, oldDeltas);
+            assert(result.length === 4);
+            const passage1 = { passage :{above: 1, text: "foo1", uuid: "link1"}};
+            const passage2 = { passage :{above: 1, text: "foo2", uuid: "link2"}};
+            const unit1 = {unit:{at: 1, uuid: "uuid1"}};
+            const unit2 = {unit:{at: 3, uuid: "uuid2"}};
+
+            assert(Sidenote.objEquals(result[0], passage1));
+            assert(Sidenote.objEquals(result[1], passage2));
+            assert(Sidenote.objEquals(result[2], unit1));
+            assert(Sidenote.objEquals(result[3], unit2));
         },
 
         testUnitLink: function() {
