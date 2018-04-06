@@ -1068,18 +1068,20 @@ var Sidenote = {
             }
         }
 
-        const result = getVerseCommentaryLink(newi);
+        const above = 1;
+
+        const result = getPassageLink(above, newi);
 
         if (result) {
-            links.push({above: 1, link: result.link});
+            links.push({passage: result.passage});
             newi = result.newi;
         } else {
-            result1 = getVerseCommentaryLink(newi, "\n\n");
+            result1 = getPassageLink(above, newi, "\n\n");
             if (result1) {
-                result2 = getVerseCommentaryLink(result1.newi, "\n", true);
+                result2 = getPassageLink(above, result1.newi, "\n", true);
                 if (result2) {
-                    links.push({above: 1, link: result1.link});
-                    links.push({above: 1, link: result2.link});
+                    links.push({passage: result1.passage});
+                    links.push({passage: result2.passage});
                     newi = result2.newi;
                 }
             }
@@ -1229,7 +1231,7 @@ var Sidenote = {
 
         }
 
-        function getVerseCommentaryLink(newi, newLines, skipFirstNewLine) {
+        function getPassageLink(above, newi, newLines, skipFirstNewLine) {
             if (typeof newLines === "undefined") {
                 newLines = "\n";
             }
@@ -1242,15 +1244,15 @@ var Sidenote = {
                 }
 
                 // ...there must be  a link...
-                const link = getVerseCommentaryLinkFromOp(newOps[newi])
-                if (link) {
+                const result = getVerseCommentaryLinkFromOp(above, newOps[newi])
+                if (result) {
                     newi++;
                     // ...followed by a newline
                     if (Sidenote.objEquals(newOps[newi], {"insert":newLines})) {
                         newi++;
                         return {
                             newi: newi,
-                            link: link,
+                            passage: result,
                         }
                     } else {
                         return undefined;
@@ -1263,7 +1265,7 @@ var Sidenote = {
             }
         }
 
-        function getVerseCommentaryLinkFromOp(op) {
+        function getVerseCommentaryLinkFromOp(above, op) {
             const keys = Object.getOwnPropertyNames(op);
             if (keys.length != 2 ||
                 !("attributes" in op) ||
@@ -1277,6 +1279,7 @@ var Sidenote = {
                     return undefined;
                 } else {
                     return {
+                        above: above,
                         text: text,
                         uuid: uuid,
                     }
