@@ -1133,11 +1133,41 @@ var Sidenote = {
         },
 
         test: function() {
+            Sidenote.testGetSegmentLinks.testFirstAndSecondPassageLink();
             Sidenote.testGetSegmentLinks.testFirstPassageLink();
             Sidenote.testGetSegmentLinks.testGetNumUnits();
             Sidenote.testGetSegmentLinks.testNewDeltasEqualsOldDeltas();
             Sidenote.testGetSegmentLinks.testEmptyNewDeltas();
             Sidenote.testGetSegmentLinks.testBadHeader();
+        },
+
+        testFirstAndSecondPassageLink: function() {
+            const assert = Sidenote.testGetSegmentLinks.assert;
+            const oldDeltas = Sidenote.testGetSegmentLinks.oldDeltas;
+            var newDeltas = {
+                "ops": [
+                    oldDeltas.ops[0],
+                    oldDeltas.ops[1],
+                    {insert: "\n"},
+                    {"attributes":{"link":"javascript:Sidenote.openNote('link1')"},"insert":"foo1"},
+                    {insert: "\n\n"},
+                    {"attributes":{"link":"javascript:Sidenote.openNote('link2')"},"insert":"foo2"},
+                    {insert: "\n"},
+                    oldDeltas.ops[2],
+                    oldDeltas.ops[3],
+                    oldDeltas.ops[4],
+                    oldDeltas.ops[5],
+                    oldDeltas.ops[6],
+                    oldDeltas.ops[7],
+                ],
+            };
+
+            const result = Sidenote.getSegmentLinksDeltas(newDeltas, oldDeltas);
+            assert(result.length === 2)
+            const passage1 = { passage :{above: 1, text: "foo1", uuid: "link1"}};
+            const passage2 = { passage :{above: 1, text: "foo2", uuid: "link2"}};
+            assert(Sidenote.objEquals(result[0], passage1));
+            assert(Sidenote.objEquals(result[1], passage2));
         },
 
         testFirstPassageLink: function() {
