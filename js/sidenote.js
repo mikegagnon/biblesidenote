@@ -1038,7 +1038,7 @@ var Sidenote = {
         }
     },
 
-    updatedNoteValid: function(noteName) {
+    getSegmentLinks: function(noteName) {
         const MAX_LINK_LEN = 5;
 
         Sidenote.saveSelectedNote();
