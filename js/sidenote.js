@@ -1039,7 +1039,7 @@ var Sidenote = {
     },
 
     getSegmentLinks: function(noteName) {
-        const MAX_LINK_LEN = 5;
+        const helper = Sidenote.getSegmentLinksHelper;
 
         Sidenote.saveSelectedNote();
         const uuid = Sidenote.state.noteNameToUuid[noteName];
@@ -1054,7 +1054,7 @@ var Sidenote = {
         const newOps = newDeltas.ops;
         const oldOps = oldDeltas.ops;
 
-        const numUnits = getNumUnits(oldOps);
+        const numUnits = Sidenote.getSegmentLinksHelper.getNumUnits(oldOps);
 
         var oldi = 0;
         var newi = 0;
@@ -1070,15 +1070,15 @@ var Sidenote = {
 
         const above = 1;
 
-        const result = getPassageLink(above, newi);
+        const result = helper.getPassageLink(newOps, above, newi);
 
         if (result) {
             links.push({passage: result.passage});
             newi = result.newi;
         } else {
-            result1 = getPassageLink(above, newi, "\n\n");
+            result1 = helper.getPassageLink(newOps, above, newi, "\n\n");
             if (result1) {
-                result2 = getPassageLink(above, result1.newi, "\n", true);
+                result2 = helper.getPassageLink(newOps, above, result1.newi, "\n", true);
                 if (result2) {
                     links.push({passage: result1.passage});
                     links.push({passage: result2.passage});
@@ -1088,7 +1088,7 @@ var Sidenote = {
         }
 
         for (var unitNum = 1; unitNum <= numUnits; unitNum++) {
-            const result = parseUnit(unitNum, newi, oldi);
+            const result = helper.parseUnit(newOps, oldOps, unitNum, newi, oldi);
             if (!result) {
                 return undefined;
             } else {
@@ -1099,8 +1099,11 @@ var Sidenote = {
         }
 
         return links;
+    },
 
-        function getNumUnits(ops) {
+    getSegmentLinksHelper: {
+
+        getNumUnits: function(ops) {
             var numUnits = 0;
 
             for (var i = 0; i < ops.length; i++) {
@@ -1111,19 +1114,19 @@ var Sidenote = {
             }
 
             return numUnits;
-        }
+        },
 
-        function parseUnit(unitNum, newi, oldi) {
+        parseUnit: function(newOps, oldOps, unitNum, newi, oldi) {
             const newIdentifier = newOps[newi];
             const oldIdentifier = oldOps[oldi];
 
             const links = [];
 
-            if (!validOldIdentifier(unitNum, oldIdentifier)) {
+            if (!Sidenote.getSegmentLinksHelper.validOldIdentifier(unitNum, oldIdentifier)) {
                 throw "Error";
             }
 
-            const result = getUuidFromNewIdentifier(unitNum, newIdentifier)
+            const result = Sidenote.getSegmentLinksHelper.getUuidFromNewIdentifier(unitNum, newIdentifier)
             if (!result.valid) {
                 return undefined;
             } else if (result.uuid) {
@@ -1141,7 +1144,7 @@ var Sidenote = {
             const newText = newOps[newi];
             const oldText = oldOps[oldi];
 
-            if (!validUnitText(newText, oldText)) {
+            if (!Sidenote.getSegmentLinksHelper.validUnitText(newText, oldText)) {
                 return undefined;
             }
 
@@ -1153,9 +1156,9 @@ var Sidenote = {
                 oldi: oldi,
                 links: links,
             };
-        }
+        },
 
-        function validOldIdentifier(unitNunm, op) {
+        validOldIdentifier: function(unitNum, op) {
             const keys = Object.getOwnPropertyNames(op);
             if (keys.length != 2 ||
                 !("attributes" in op) ||
@@ -1170,17 +1173,17 @@ var Sidenote = {
                 }
                 return op.insert === unitNum + String.fromCharCode(160);
             }
-        }
+        },
 
-        function getUuidFromNewIdentifier(unitNum, op) {
-            if (validOldIdentifier(unitNum, op)) {
+        getUuidFromNewIdentifier: function(unitNum, op) {
+            if (Sidenote.getSegmentLinksHelper.validOldIdentifier(unitNum, op)) {
                 return {valid: true, uuid: undefined};
             } else {
-                return extractUuidFromIdentifier(unitNum, op);
+                return Sidenote.getSegmentLinksHelper.extractUuidFromIdentifier(unitNum, op);
             }
-        }
+        },
 
-        function extractUuidFromIdentifier(unitNum, op) {
+        extractUuidFromIdentifier: function(unitNum, op) {
             const keys = Object.getOwnPropertyNames(op);
             if (keys.length != 2 ||
                 !("attributes" in op) ||
@@ -1199,7 +1202,7 @@ var Sidenote = {
                     return {valid: false, uuid: undefined};
                 }
 
-                const uuid = getUuidFromLink(op.attributes.link);
+                const uuid = Sidenote.getSegmentLinksHelper.getUuidFromLink(op.attributes.link);
 
                 if (uuid) {
                     return {valid: true, uuid: uuid};
@@ -1207,9 +1210,9 @@ var Sidenote = {
                     return {valid: false, uuid: undefined};
                 }
             }
-        }
+        },
 
-        function extractUnitText(op) {
+        extractUnitText: function(op) {
             const keys = Object.getOwnPropertyNames(op);
             if (keys.length != 1 ||
                 !("insert" in op)) {
@@ -1217,11 +1220,11 @@ var Sidenote = {
             }
 
             return op.insert;
-        }
+        },
 
-        function validUnitText(newOp, oldOp) {
-            const newText = extractUnitText(newOp);
-            const oldText = extractUnitText(oldOp);
+        validUnitText: function(newOp, oldOp) {
+            const newText = Sidenote.getSegmentLinksHelper.extractUnitText(newOp);
+            const oldText = Sidenote.getSegmentLinksHelper.extractUnitText(oldOp);
 
             if (typeof oldText === "undefined") {
                 throw "Error";
@@ -1231,9 +1234,9 @@ var Sidenote = {
                 return true;
             }
 
-        }
+        },
 
-        function getPassageLink(above, newi, newLines, skipFirstNewLine) {
+        getPassageLink: function(newOps, above, newi, newLines, skipFirstNewLine) {
             if (typeof newLines === "undefined") {
                 newLines = "\n";
             }
@@ -1246,7 +1249,7 @@ var Sidenote = {
                 }
 
                 // ...there must be  a link...
-                const result = getVerseCommentaryLinkFromOp(above, newOps[newi])
+                const result = Sidenote.getSegmentLinksHelper.getVerseCommentaryLinkFromOp(above, newOps[newi])
                 if (result) {
                     newi++;
                     // ...followed by a newline
@@ -1265,17 +1268,17 @@ var Sidenote = {
             } else {
                 return undefined;
             }
-        }
+        },
 
-        function getVerseCommentaryLinkFromOp(above, op) {
+        getVerseCommentaryLinkFromOp: function(above, op) {
             const keys = Object.getOwnPropertyNames(op);
             if (keys.length != 2 ||
                 !("attributes" in op) ||
                 !("insert" in op)) {
                 return undefined;
             } else {
-                const text = getVerseCommentaryLinkText(op.insert);
-                const uuid = getVerseCommentaryLinkUuid(op.attributes);
+                const text = Sidenote.getSegmentLinksHelper.getVerseCommentaryLinkText(op.insert);
+                const uuid = Sidenote.getSegmentLinksHelper.getVerseCommentaryLinkUuid(op.attributes);
 
                 if (!text || !uuid) {
                     return undefined;
@@ -1287,28 +1290,30 @@ var Sidenote = {
                     }
                 }
             }
-        }
+        },
 
-        function getVerseCommentaryLinkText(insert) {
+        getVerseCommentaryLinkText: function(insert) {
+            const MAX_LINK_LEN = 5;
+
             // TODO: search for new lines and other bad chars?
             if (insert.length <= MAX_LINK_LEN) {
                 return insert;
             } else {
                 return undefined;
             }
-        }
+        },
 
-        function getVerseCommentaryLinkUuid(attributes) {
+        getVerseCommentaryLinkUuid: function(attributes) {
             const keys = Object.getOwnPropertyNames(attributes);
             if (keys.length != 1 ||
                 !("link" in attributes)) {
                 return undefined;
             }
 
-            return getUuidFromLink(attributes.link);
-        }
+            return Sidenote.getSegmentLinksHelper.getUuidFromLink(attributes.link);
+        },
 
-        function getUuidFromLink(link) {
+        getUuidFromLink: function(link) {
             if (!link.startsWith("javascript:Sidenote.openNote('"))
             {
                 return undefined;
@@ -1325,7 +1330,7 @@ var Sidenote = {
             }
 
             return uuid;
-        }
+        },
     },
 
     objEquals: function(obj1, obj2) {
