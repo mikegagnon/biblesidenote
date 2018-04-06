@@ -1062,6 +1062,10 @@ var Sidenote = {
         const newOps = newDeltas.ops;
         const oldOps = oldDeltas.ops;
 
+        if (newOps.length < oldOps.length) {
+            return undefined;
+        }
+
         const numUnits = Sidenote.getSegmentLinksHelper.getNumUnits(oldOps);
 
         var oldi = 0;
@@ -1071,8 +1075,10 @@ var Sidenote = {
         // Make sure title and first new line are in order
         const headerLength = 2;
         for (; oldi < headerLength; oldi++, newi++) {
-            if (!Sidenote.objEquals(newOps[newi], oldOps[oldi])) {
-                return false;
+            const newOp = newOps[newi];
+            const oldOp = oldOps[oldi];
+            if (!Sidenote.objEquals(newOp, oldOp)) {
+                return undefined;
             }
         }
 
@@ -1115,17 +1121,20 @@ var Sidenote = {
         oldDeltas: {
             "ops":[
                 {"insert":"Matthew 18"},
-                {"attributes":{"header":1},
-                "insert":"\n"},
+                {"attributes":{"header":1}, "insert":"\n"},
                 {"attributes":{"bold":true},"insert":"1 "},
                 {"insert":"At the same time came the disciples unto Jesus, saying, Who is the greatest in the kingdom of heaven? "},
-                {"attributes":{"bold":true},"insert":"2 "},{"insert":"And Jesus called a little child unto him, and set him in the midst of them, "},
-                {"attributes":{"bold":true},"insert":"3 "},{"insert":"And said, Verily I say unto you, Except ye be converted, and become as little children, ye shall not enter into the kingdom of heaven. "},
+                {"attributes":{"bold":true},"insert":"2 "},
+                {"insert":"And Jesus called a little child unto him, and set him in the midst of them, "},
+                {"attributes":{"bold":true},"insert":"3 "},
+                {"insert":"And said, Verily I say unto you, Except ye be converted, and become as little children, ye shall not enter into the kingdom of heaven. "},
             ]
         },
 
         test: function() {
             Sidenote.testGetSegmentLinks.testNewDeltasEqualsOldDeltas();
+            Sidenote.testGetSegmentLinks.testEmptyNewDeltas();
+            Sidenote.testGetSegmentLinks.testBadHeader();
         },
 
         testNewDeltasEqualsOldDeltas: function() {
@@ -1134,6 +1143,64 @@ var Sidenote = {
             const newDeltas = Sidenote.deepCopy(oldDeltas);
             const result = Sidenote.getSegmentLinksDeltas(newDeltas, oldDeltas);
             assert(result.length == 0);
+        },
+
+        testEmptyNewDeltas: function() {
+            const assert = Sidenote.testGetSegmentLinks.assert;
+            const oldDeltas = Sidenote.testGetSegmentLinks.oldDeltas;
+            const newDeltas = {"ops":[]};
+            const result = Sidenote.getSegmentLinksDeltas(newDeltas, oldDeltas);
+            assert(typeof result === "undefined");
+        },
+
+        testBadHeader: function() {
+            const assert = Sidenote.testGetSegmentLinks.assert;
+            const oldDeltas = Sidenote.testGetSegmentLinks.oldDeltas;
+            var newDeltas = {
+                "ops": [
+                    oldDeltas.ops[0],
+                    {"attributes":{"header":1}, "insert":"bad"},
+                    oldDeltas.ops[2],
+                    oldDeltas.ops[3],
+                    oldDeltas.ops[4],
+                    oldDeltas.ops[5],
+                    oldDeltas.ops[6],
+                    oldDeltas.ops[7],
+                ],
+            };
+
+            var result = Sidenote.getSegmentLinksDeltas(newDeltas, oldDeltas);
+            assert(typeof result === "undefined");
+
+            newDeltas = {
+                "ops": [
+                    {"insert":"bad"},
+                    oldDeltas.ops[1],
+                    oldDeltas.ops[2],
+                    oldDeltas.ops[3],
+                    oldDeltas.ops[4],
+                    oldDeltas.ops[5],
+                    oldDeltas.ops[6],
+                    oldDeltas.ops[7],
+                ],
+            };
+            result = Sidenote.getSegmentLinksDeltas(newDeltas, oldDeltas);
+            assert(typeof result === "undefined");
+
+            newDeltas = {
+                "ops": [
+                    oldDeltas.ops[0],
+                    {"attributes":{"header":2}, "insert":"\n"},
+                    oldDeltas.ops[2],
+                    oldDeltas.ops[3],
+                    oldDeltas.ops[4],
+                    oldDeltas.ops[5],
+                    oldDeltas.ops[6],
+                    oldDeltas.ops[7],
+                ],
+            };
+            result = Sidenote.getSegmentLinksDeltas(newDeltas, oldDeltas);
+            assert(typeof result === "undefined");
         },
 
         assert: function(bool){
