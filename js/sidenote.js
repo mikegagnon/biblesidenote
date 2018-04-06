@@ -121,12 +121,33 @@ var Sidenote = {
         };
 
         Sidenote.state.notes.push(note);
-        Sidenote.createNoteDiv(note.divId, note.columnPosition);
+        const editor = Sidenote.createNoteDiv(note.divId, note.columnPosition);
+        Sidenote.editorOnChange(editor, segment, uuid, note.divId);
         Sidenote.setContents(note);
         Sidenote.hideToolbar(note.divId);
         Sidenote.slide(note);
 
         return note;
+    },
+
+    editorOnChange: function(editor, segment, uuid, divId) {
+        if (!segment) {
+            return;
+        }
+
+        editor.on('text-change', function(delta, oldDelta, source) {
+
+            if (source === "api") {
+                return;
+            }
+
+            const links = Sidenote.getSegmentLinksFromUuid(uuid);
+            if (typeof links === "undefined") {
+                $("#" + divId).css("background-color", "pink");
+            } else {
+                $("#" + divId).css("background-color", "");
+            }
+        });
     },
 
     createNoteDiv: function(divId, columnPosition) {
@@ -137,7 +158,7 @@ var Sidenote = {
 
         $("#note-container").append(html);
 
-        Sidenote.newEditor(divId);
+        const editor = Sidenote.newEditor(divId);
 
         if (!Sidenote.constant.toolbarHeight) {
             Sidenote.initToolbarHeight();
@@ -151,6 +172,8 @@ var Sidenote = {
         $("#" + divId).focusin(function(){
             Sidenote.noteFocusIn(divId);
         });
+
+        return editor;
     },
 
     newEditor: function(divId) {
@@ -176,6 +199,8 @@ var Sidenote = {
         }
 
         Sidenote.positionToolbars();
+
+        return editor;
     },
 
     initToolbarHeight: function() {
@@ -1036,6 +1061,11 @@ var Sidenote = {
         } else {
             return passage.uuid;
         }
+    },
+
+    getSegmentLinksFromUuid: function(uuid) {
+        const segmentName = Sidenote.state.uuidToNoteName[uuid];
+        return Sidenote.getSegmentLinks(segmentName);
     },
 
     getSegmentLinks: function(segmentName) {
