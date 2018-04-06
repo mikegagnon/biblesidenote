@@ -1132,6 +1132,11 @@ var Sidenote = {
             ]
         },
 
+        // Note: these tests only test well-formed segment deltas. I.e.,
+        // it does not test the various ways a segment can be malformed.
+        // Therefore, when you modify the functionality of getSegmentLinksDeltas,
+        // it is necessary to manually perturb these tests to make sure
+        // malformed segments do not return success.
         test: function() {
             Sidenote.testGetSegmentLinks.testComplete();
             Sidenote.testGetSegmentLinks.testUnitLink();
