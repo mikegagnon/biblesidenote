@@ -1128,8 +1128,10 @@ var Sidenote = {
                 return undefined;
             } else if (result.uuid) {
                 links.push({
-                    at: unitNum,
-                    uuid: result.uuid
+                    unit: {
+                        at: unitNum,
+                        uuid: result.uuid
+                    }
                 });
             }
 
