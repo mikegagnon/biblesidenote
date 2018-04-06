@@ -1111,10 +1111,24 @@ var Sidenote = {
                 links = links.concat(result.links);
                 newi = result.newi;
                 oldi = result.oldi;
+
+                if (unitNum < numUnits) {
+                    const above = unitNum + 1;
+                    const result2 = helper.getPassageLink(newOps, above, newi, "\n", true);
+                    if (result2) {
+                        links.push({passage: result2.passage});
+                        newi = result2.newi;
+                    }
+                }
             }
         }
 
-        return links;
+        if (newi === newOps.length && oldi === oldOps.length) {
+            return links;
+        } else {
+            return undefined;
+        }
+
     },
 
     testGetSegmentLinks: {
@@ -1357,6 +1371,8 @@ var Sidenote = {
         },
 
         parseUnit: function(newOps, oldOps, unitNum, newi, oldi) {
+            newi = Sidenote.getSegmentLinksHelper.skipSpace(newi, newOps);
+
             const newIdentifier = newOps[newi];
             const oldIdentifier = oldOps[oldi];
 
@@ -1449,9 +1465,7 @@ var Sidenote = {
                     return {valid: false, uuid: undefined};
                 }
 
-                if (op.insert !== unitNum + String.fromCharCode(160) &&
-                    op.insert !== unitNum + " " &&
-                    op.insert !== unitNum.toString())  {
+                if (op.insert.trim() !== unitNum.toString())  {
                     return {valid: false, uuid: undefined};
                 }
 
