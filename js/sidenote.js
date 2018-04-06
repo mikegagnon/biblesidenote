@@ -1132,9 +1132,17 @@ var Sidenote = {
         },
 
         test: function() {
+            Sidenote.testGetSegmentLinks.testGetNumUnits();
             Sidenote.testGetSegmentLinks.testNewDeltasEqualsOldDeltas();
             Sidenote.testGetSegmentLinks.testEmptyNewDeltas();
             Sidenote.testGetSegmentLinks.testBadHeader();
+        },
+
+        testGetNumUnits: function() {
+            const assert = Sidenote.testGetSegmentLinks.assert;
+            const oldDeltas = Sidenote.testGetSegmentLinks.oldDeltas;
+            const getNumUnits = Sidenote.getSegmentLinksHelper.getNumUnits;
+            assert(getNumUnits(oldDeltas.ops) === 3);
         },
 
         testNewDeltasEqualsOldDeltas: function() {
