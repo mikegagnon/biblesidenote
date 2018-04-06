@@ -1125,10 +1125,10 @@ var Sidenote = {
         },
 
         test: function() {
-            Sidenote.testGetSegmentLinks.test1();
+            Sidenote.testGetSegmentLinks.testNewDeltasEqualsOldDeltas();
         },
 
-        test1: function() {
+        testNewDeltasEqualsOldDeltas: function() {
             const assert = Sidenote.testGetSegmentLinks.assert;
             const oldDeltas = Sidenote.testGetSegmentLinks.oldDeltas;
             const newDeltas = Sidenote.deepCopy(oldDeltas);
