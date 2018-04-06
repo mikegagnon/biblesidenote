@@ -1379,6 +1379,8 @@ var Sidenote = {
             newi++;
             oldi++;
 
+            newi = Sidenote.getSegmentLinksHelper.skipSpace(newi, newOps);
+
             const newText = newOps[newi];
             const oldText = oldOps[oldi];
 
@@ -1394,6 +1396,15 @@ var Sidenote = {
                 oldi: oldi,
                 links: links,
             };
+        },
+
+        skipSpace: function(newi, newOps) {
+            const op = newOps[newi];
+            if (op && "insert" in op && (op.insert === " " || op.insert === String.fromCharCode(160))) {
+                return newi + 1;
+            } else {
+                return newi;
+            }
         },
 
         validOldIdentifier: function(unitNum, op) {
@@ -1436,7 +1447,9 @@ var Sidenote = {
                     return {valid: false, uuid: undefined};
                 }
 
-                if (op.insert !== unitNum + String.fromCharCode(160)) {
+                if (op.insert !== unitNum + String.fromCharCode(160) &&
+                    op.insert !== unitNum + " " &&
+                    op.insert !== unitNum.toString())  {
                     return {valid: false, uuid: undefined};
                 }
 
@@ -1457,7 +1470,7 @@ var Sidenote = {
                 return undefined;
             }
 
-            return op.insert;
+            return op.insert.trim();
         },
 
         validUnitText: function(newOp, oldOp) {
