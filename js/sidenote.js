@@ -1164,7 +1164,9 @@ var Sidenote = {
                     oldDeltas.ops[3],
                     oldDeltas.ops[4],
                     oldDeltas.ops[5],
-                    {"attributes":{"bold":true,"link":"javascript:Sidenote.openNote('uuid2')"}, "insert":"3 "},
+                    // Test skipSpace
+                    {"attributes":{"bold":true,"link":"javascript:Sidenote.openNote('uuid2')"}, "insert":"3"},
+                    {"insert": " "},
                     oldDeltas.ops[7],
                 ],
             };
