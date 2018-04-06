@@ -143,7 +143,7 @@ var Sidenote = {
 
             const links = Sidenote.getSegmentLinksFromUuid(uuid);
             if (typeof links === "undefined") {
-                $("#" + divId).css("background-color", "pink");
+                $("#" + divId).css("background-color", "#ffe2dd");
             } else {
                 $("#" + divId).css("background-color", "");
             }
