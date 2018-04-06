@@ -1054,6 +1054,7 @@ var Sidenote = {
             return;
         }
 
+        // TODO: validate that the uuids in the result are actually in contents
         return Sidenote.getSegmentLinksDeltas(newDeltas, oldDeltas);
     },
 
@@ -1132,10 +1133,36 @@ var Sidenote = {
         },
 
         test: function() {
+            Sidenote.testGetSegmentLinks.testFirstPassageLink();
             Sidenote.testGetSegmentLinks.testGetNumUnits();
             Sidenote.testGetSegmentLinks.testNewDeltasEqualsOldDeltas();
             Sidenote.testGetSegmentLinks.testEmptyNewDeltas();
             Sidenote.testGetSegmentLinks.testBadHeader();
+        },
+
+        testFirstPassageLink: function() {
+            const assert = Sidenote.testGetSegmentLinks.assert;
+            const oldDeltas = Sidenote.testGetSegmentLinks.oldDeltas;
+            var newDeltas = {
+                "ops": [
+                    oldDeltas.ops[0],
+                    oldDeltas.ops[1],
+                    {insert: "\n"},
+                    {"attributes":{"link":"javascript:Sidenote.openNote('xkcMQV7OR9Pwt4htwsZGa2M')"},"insert":"foo"},
+                    {insert: "\n"},
+                    oldDeltas.ops[2],
+                    oldDeltas.ops[3],
+                    oldDeltas.ops[4],
+                    oldDeltas.ops[5],
+                    oldDeltas.ops[6],
+                    oldDeltas.ops[7],
+                ],
+            };
+
+            const result = Sidenote.getSegmentLinksDeltas(newDeltas, oldDeltas);
+            assert(result.length === 1)
+            const passage = { passage :{above: 1, text: "foo", uuid: "xkcMQV7OR9Pwt4htwsZGa2M"}}
+            assert(Sidenote.objEquals(result[0], passage));
         },
 
         testGetNumUnits: function() {
@@ -1431,6 +1458,7 @@ var Sidenote = {
             return Sidenote.getSegmentLinksHelper.getUuidFromLink(attributes.link);
         },
 
+        // Does not validate that uuid is in contents
         getUuidFromLink: function(link) {
             if (!link.startsWith("javascript:Sidenote.openNote('"))
             {
@@ -1443,9 +1471,6 @@ var Sidenote = {
             }
 
             const uuid = parts[1];
-            if (!(uuid in Sidenote.state.contents)) {
-                return undefined;
-            }
 
             return uuid;
         },
