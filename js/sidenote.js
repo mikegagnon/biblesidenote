@@ -1133,12 +1133,35 @@ var Sidenote = {
         },
 
         test: function() {
+            Sidenote.testGetSegmentLinks.testUnitLink();
             Sidenote.testGetSegmentLinks.testFirstAndSecondPassageLink();
             Sidenote.testGetSegmentLinks.testFirstPassageLink();
             Sidenote.testGetSegmentLinks.testGetNumUnits();
             Sidenote.testGetSegmentLinks.testNewDeltasEqualsOldDeltas();
             Sidenote.testGetSegmentLinks.testEmptyNewDeltas();
             Sidenote.testGetSegmentLinks.testBadHeader();
+        },
+
+        testUnitLink: function() {
+            const assert = Sidenote.testGetSegmentLinks.assert;
+            const oldDeltas = Sidenote.testGetSegmentLinks.oldDeltas;
+            var newDeltas = {
+                "ops": [
+                    oldDeltas.ops[0],
+                    oldDeltas.ops[1],
+                    {"attributes":{"bold":true,"link":"javascript:Sidenote.openNote('uuid1')"}, "insert":"1 "},
+                    oldDeltas.ops[3],
+                    oldDeltas.ops[4],
+                    oldDeltas.ops[5],
+                    oldDeltas.ops[6],
+                    oldDeltas.ops[7],
+                ],
+            };
+
+            const result = Sidenote.getSegmentLinksDeltas(newDeltas, oldDeltas);
+            assert(result.length === 1)
+            const unit = {unit:{at: 1, uuid: "uuid1"}};
+            assert(Sidenote.objEquals(result[0], unit));
         },
 
         testFirstAndSecondPassageLink: function() {
