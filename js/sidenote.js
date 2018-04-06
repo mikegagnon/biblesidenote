@@ -1056,9 +1056,9 @@ var Sidenote = {
 
         const numUnits = getNumUnits(oldOps);
 
-        oldi = 0;
-        newi = 0;
-        links = [];
+        var oldi = 0;
+        var newi = 0;
+        var links = [];
 
         // Make sure title and first new line are in order
         const headerLength = 2;
@@ -1090,7 +1090,7 @@ var Sidenote = {
             if (!result) {
                 return undefined;
             } else {
-                links.concat(result.links);
+                links = links.concat(result.links);
                 newi = result.newi;
                 oldi = result.oldi;
             }
@@ -1115,12 +1115,20 @@ var Sidenote = {
             const newIdentifier = newOps[newi];
             const oldIdentifier = oldOps[oldi];
 
+            const links = [];
+
             if (!validOldIdentifier(unitNum, oldIdentifier)) {
                 throw "Error";
             }
 
-            if (!validNewIdentifier(unitNum, newIdentifier)) {
+            const result = getUuidFromNewIdentifier(unitNum, newIdentifier)
+            if (!result.valid) {
                 return undefined;
+            } else if (result.uuid) {
+                links.push({
+                    at: unitNum,
+                    uuid: result.uuid
+                });
             }
 
             newi++;
@@ -1139,7 +1147,7 @@ var Sidenote = {
             return {
                 newi: newi,
                 oldi: oldi,
-                links: [],
+                links: links,
             };
         }
 
@@ -1160,13 +1168,41 @@ var Sidenote = {
             }
         }
 
-        function validNewIdentifier(unitNum, op) {
+        function getUuidFromNewIdentifier(unitNum, op) {
             if (validOldIdentifier(unitNum, op)) {
-                return true;
+                return {valid: true, uuid: undefined};
+            } else {
+                return extractUuidFromIdentifier(unitNum, op);
             }
+        }
 
-            console.log(unitNum, op);
-            return false;
+        function extractUuidFromIdentifier(unitNum, op) {
+            const keys = Object.getOwnPropertyNames(op);
+            if (keys.length != 2 ||
+                !("attributes" in op) ||
+                !("insert" in op)) {
+                return {valid: false, uuid: undefined};
+            } else {
+                const keys = Object.getOwnPropertyNames(op.attributes);
+                if (keys.length != 2 ||
+                    !("bold" in op.attributes) ||
+                    !("link" in op.attributes) ||
+                    op.attributes.bold !== true) {
+                    return {valid: false, uuid: undefined};
+                }
+
+                if (op.insert !== unitNum + String.fromCharCode(160)) {
+                    return {valid: false, uuid: undefined};
+                }
+
+                const uuid = getUuidFromLink(op.attributes.link);
+
+                if (uuid) {
+                    return {valid: true, uuid: uuid};
+                } else {
+                    return {valid: false, uuid: undefined};
+                }
+            }
         }
 
         function extractUnitText(op) {
@@ -1264,8 +1300,10 @@ var Sidenote = {
                 return undefined;
             }
 
-            const link = attributes.link;
+            return getUuidFromLink(attributes.link);
+        }
 
+        function getUuidFromLink(link) {
             if (!link.startsWith("javascript:Sidenote.openNote('"))
             {
                 return undefined;
