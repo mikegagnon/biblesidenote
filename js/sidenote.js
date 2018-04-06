@@ -1468,7 +1468,7 @@ var Sidenote = {
                     op.attributes.bold !== true) {
                     return false;
                 }
-                return op.insert === unitNum + String.fromCharCode(160);
+                return op.insert.trim() === unitNum.toString();
             }
         },
 
