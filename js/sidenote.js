@@ -1590,7 +1590,7 @@ var Sidenote = {
         },
 
         getVerseCommentaryLinkText: function(insert) {
-            const MAX_LINK_LEN = 5;
+            const MAX_LINK_LEN = 50;
 
             // TODO: search for new lines and other bad chars?
             if (insert.length <= MAX_LINK_LEN) {
